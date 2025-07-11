@@ -266,31 +266,14 @@ class GTFSIngestion:
         # Save to ZIP file
         os.makedirs(os.path.dirname(output_path), exist_ok=True)
         
-        with zipfile.ZipFile(output_path, 'w') as zf:
-            # Write each DataFrame to CSV in the ZIP
-            stops_data.to_csv('stops.txt', index=False)
-            zf.write('stops.txt')
-            os.remove('stops.txt')
-            
-            routes_data.to_csv('routes.txt', index=False)
-            zf.write('routes.txt')
-            os.remove('routes.txt')
-            
-            trips_df.to_csv('trips.txt', index=False)
-            zf.write('trips.txt')
-            os.remove('trips.txt')
-            
-            stop_times_df.to_csv('stop_times.txt', index=False)
-            zf.write('stop_times.txt')
-            os.remove('stop_times.txt')
-            
-            calendar_data.to_csv('calendar.txt', index=False)
-            zf.write('calendar.txt')
-            os.remove('calendar.txt')
-            
-            shapes_df.to_csv('shapes.txt', index=False)
-            zf.write('shapes.txt')
-            os.remove('shapes.txt')
+        with zipfile.ZipFile(output_path, 'w', zipfile.ZIP_DEFLATED) as zf:
+            # Write each DataFrame to CSV in the ZIP using an in-memory buffer
+            zf.writestr('stops.txt', stops_data.to_csv(index=False))
+            zf.writestr('routes.txt', routes_data.to_csv(index=False))
+            zf.writestr('trips.txt', trips_df.to_csv(index=False))
+            zf.writestr('stop_times.txt', stop_times_df.to_csv(index=False))
+            zf.writestr('calendar.txt', calendar_data.to_csv(index=False))
+            zf.writestr('shapes.txt', shapes_df.to_csv(index=False))
         
         logger.info(f"Demo GTFS data created at {output_path}")
         return output_path

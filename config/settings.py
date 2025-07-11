@@ -4,6 +4,7 @@ Configuration settings for MARTA Demand Forecasting & Route Optimization Platfor
 import os
 from typing import Optional
 from pydantic_settings import BaseSettings
+from pydantic import Field
 
 
 class Settings(BaseSettings):
@@ -20,8 +21,8 @@ class Settings(BaseSettings):
     # MARTA API Configuration
     MARTA_API_KEY: Optional[str] = os.getenv("MARTA_API_KEY")
     MARTA_GTFS_STATIC_URL: str = "https://itsmarta.com/app-developer-resources.aspx"
-    MARTA_GTFS_RT_VEHICLE_URL: str = "https://api.marta.io/gtfs-rt/vehicle-positions/vehicle.pb"
-    MARTA_GTFS_RT_TRIP_URL: str = "https://api.marta.io/gtfs-rt/trip-updates/tripupdate.pb"
+    MARTA_GTFS_RT_VEHICLE_URL: str = Field(os.getenv("MARTA_GTFS_RT_VEHICLE_URL", "https://itsmarta.com/gtfs-rt/vehicle-positions/vehicle.pb"))
+    MARTA_GTFS_RT_TRIP_URL: str = Field(os.getenv("MARTA_GTFS_RT_TRIP_URL", "https://itsmarta.com/gtfs-rt/trip-updates/tripupdate.pb"))
     MARTA_KPI_URL: str = "https://itsmarta.com/KPIRidership.aspx"
     
     # External APIs

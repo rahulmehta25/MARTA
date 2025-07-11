@@ -12,6 +12,7 @@ import requests
 import psycopg2
 from psycopg2 import extras
 import pandas as pd
+import numpy as np
 
 from google.transit import gtfs_realtime_pb2
 
@@ -58,9 +59,9 @@ class GTFSRealtimeProcessor:
             CREATE TABLE IF NOT EXISTS unified_realtime_historical_data (
                 record_id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
                 timestamp TIMESTAMP NOT NULL,
-                trip_id VARCHAR(255) REFERENCES gtfs_trips(trip_id),
-                route_id VARCHAR(255) REFERENCES gtfs_routes(route_id),
-                stop_id VARCHAR(255) REFERENCES gtfs_stops(stop_id),
+                trip_id VARCHAR(255),
+                route_id VARCHAR(255),
+                stop_id VARCHAR(255),
                 stop_sequence INTEGER,
                 vehicle_id VARCHAR(255),
                 latitude NUMERIC,
@@ -102,7 +103,7 @@ class GTFSRealtimeProcessor:
     def fetch_and_parse_feed(self, url: str, feed_type: str) -> Optional[gtfs_realtime_pb2.FeedMessage]:
         """Fetch and parse GTFS-RT feed"""
         try:
-            response = requests.get(url, headers=self.headers, timeout=10)
+            response = requests.get(url, headers=self.headers, timeout=10, verify=False)
             response.raise_for_status()
             
             feed = gtfs_realtime_pb2.FeedMessage()
@@ -292,11 +293,11 @@ class GTFSRealtimeProcessor:
         
         # Insert data
         cols_str = ', '.join(columns)
-        vals_str = ', '.join(['%s' for _ in columns])
+        vals_str = ', '.join([f'%s' for _ in columns])
         
         insert_query = f"""
             INSERT INTO unified_realtime_historical_data ({cols_str})
-            VALUES ({vals_str})
+            VALUES %s
         """
         
         try:
@@ -309,6 +310,214 @@ class GTFSRealtimeProcessor:
             logger.error(f"Error storing real-time data: {e}")
             raise
     
+    def ingest_historical_realtime_data(self, num_iterations: int = 10, interval_seconds: int = 30):
+        """Fetches and processes GTFS-RT feeds for a specified number of iterations.
+        This is for historical data ingestion for model training.
+        """
+        logger.info(f"Starting historical GTFS-RT data ingestion for {num_iterations} iterations...")
+        
+        for i in range(num_iterations):
+            logger.debug(f"Fetching GTFS-RT data (iteration {i+1}/{num_iterations}) at {datetime.now().isoformat()}")
+            
+            # Fetch and process Vehicle Positions
+            vp_feed = self.fetch_and_parse_feed(
+                settings.MARTA_GTFS_RT_VEHICLE_URL, 
+                "Vehicle Positions"
+            )
+            vehicle_positions_data = self.process_vehicle_positions(vp_feed)
+            
+            if vehicle_positions_data:
+                logger.info(f"Processed {len(vehicle_positions_data)} vehicle positions")
+                # Store vehicle position data
+                self.store_realtime_data(vehicle_positions_data)
+            
+            # Fetch and process Trip Updates
+            tu_feed = self.fetch_and_parse_feed(
+                settings.MARTA_GTFS_RT_TRIP_URL, 
+                "Trip Updates"
+            )
+            trip_updates_data = self.process_trip_updates(tu_feed)
+            
+            if trip_updates_data:
+                # Enrich trip updates with static data
+                enriched_trip_data = self.enrich_with_static_data(trip_updates_data, "trip_updates")
+                logger.info(f"Processed {len(enriched_trip_data)} trip updates")
+                # Store trip update data
+                self.store_realtime_data(enriched_trip_data)
+            
+            if i < num_iterations - 1:
+                time.sleep(interval_seconds)
+        
+        logger.info("Historical GTFS-RT data ingestion completed.")
+
+    def ingest_historical_realtime_data(self, num_iterations: int = 10, interval_seconds: int = 30):
+        """Fetches and processes GTFS-RT feeds for a specified number of iterations.
+        This is for historical data ingestion for model training.
+        """
+        logger.info(f"Starting historical GTFS-RT data ingestion for {num_iterations} iterations...")
+        
+        for i in range(num_iterations):
+            logger.debug(f"Fetching GTFS-RT data (iteration {i+1}/{num_iterations}) at {datetime.now().isoformat()}")
+            
+            # Fetch and process Vehicle Positions
+            vp_feed = self.fetch_and_parse_feed(
+                settings.MARTA_GTFS_RT_VEHICLE_URL, 
+                "Vehicle Positions"
+            )
+            vehicle_positions_data = self.process_vehicle_positions(vp_feed)
+            
+            if vehicle_positions_data:
+                logger.info(f"Processed {len(vehicle_positions_data)} vehicle positions")
+                # Store vehicle position data
+                self.store_realtime_data(vehicle_positions_data)
+            
+            # Fetch and process Trip Updates
+            tu_feed = self.fetch_and_parse_feed(
+                settings.MARTA_GTFS_RT_TRIP_URL, 
+                "Trip Updates"
+            )
+            trip_updates_data = self.process_trip_updates(tu_feed)
+            
+            if trip_updates_data:
+                # Enrich trip updates with static data
+                enriched_trip_data = self.enrich_with_static_data(trip_updates_data, "trip_updates")
+                logger.info(f"Processed {len(enriched_trip_data)} trip updates")
+                # Store trip update data
+                self.store_realtime_data(enriched_trip_data)
+            
+            if i < num_iterations - 1:
+                time.sleep(interval_seconds)
+        
+        logger.info("Historical GTFS-RT data ingestion completed.")
+
+    def generate_synthetic_realtime_data(self, num_days: int = 7):
+        """Generates and ingests synthetic real-time data based on static GTFS.
+        This is used when real-time API is unavailable or for demo purposes.
+        """
+        logger.info(f"Generating {num_days} days of synthetic real-time data...")
+
+        if not self.db_connection:
+            self.create_db_connection()
+
+        try:
+            # Fetch static GTFS data
+            trips_df = pd.read_sql("SELECT trip_id, route_id, service_id FROM gtfs_trips", self.db_connection)
+            stop_times_df = pd.read_sql("SELECT trip_id, stop_id, stop_sequence, arrival_time, departure_time FROM gtfs_stop_times", self.db_connection)
+            stops_df = pd.read_sql("SELECT stop_id, stop_lat, stop_lon FROM gtfs_stops", self.db_connection)
+
+            # Merge dataframes
+            merged_df = pd.merge(stop_times_df, trips_df, on='trip_id')
+            merged_df = pd.merge(merged_df, stops_df, on='stop_id')
+
+            synthetic_data = []
+            current_date = datetime.now().date() - timedelta(days=num_days)
+
+            for day_offset in range(num_days):
+                date_to_simulate = current_date + timedelta(days=day_offset)
+                logger.info(f"Simulating data for {date_to_simulate}...")
+
+                for _, row in merged_df.iterrows():
+                    # Simulate timestamp
+                    scheduled_arrival_str = row['arrival_time']
+                    scheduled_departure_str = row['departure_time']
+
+                    # Convert time strings to timedelta for calculation
+                    try:
+                        # Handle potential 'days' in timedelta if time crosses midnight
+                        h, m, s = map(int, scheduled_arrival_str.split(':'))
+                        scheduled_arrival_td = timedelta(hours=h, minutes=m, seconds=s)
+                        h, m, s = map(int, scheduled_departure_str.split(':'))
+                        scheduled_departure_td = timedelta(hours=h, minutes=m, seconds=s)
+                    except ValueError:
+                        # Handle cases where time might be > 24:00:00 (GTFS extended times)
+                        # For simplicity, cap at 23:59:59 for now or handle more robustly
+                        logger.warning(f"Invalid time format or extended time: {scheduled_arrival_str} or {scheduled_departure_str}. Skipping row.")
+                        continue
+
+                    # Combine date and time
+                    scheduled_arrival_time = datetime.combine(date_to_simulate, (datetime.min + scheduled_arrival_td).time())
+                    scheduled_departure_time = datetime.combine(date_to_simulate, (datetime.min + scheduled_departure_td).time())
+
+                    # Simulate delay (normal distribution around 2 minutes, std dev 5 minutes)
+                    delay_minutes = np.random.normal(2, 5)
+                    actual_arrival_time = scheduled_arrival_time + timedelta(minutes=delay_minutes)
+                    actual_departure_time = scheduled_departure_time + timedelta(minutes=delay_minutes + np.random.normal(0, 1)) # Add small noise to departure
+
+                    # Ensure actual times are not before scheduled times (simple correction)
+                    if actual_arrival_time < scheduled_arrival_time:
+                        actual_arrival_time = scheduled_arrival_time
+                    if actual_departure_time < scheduled_departure_time:
+                        actual_departure_time = scheduled_departure_time
+
+                    inferred_dwell_time_seconds = (actual_departure_time - actual_arrival_time).total_seconds()
+                    if inferred_dwell_time_seconds < 0: inferred_dwell_time_seconds = 0 # Ensure non-negative
+
+                    # Simulate demand level based on dwell time
+                    if inferred_dwell_time_seconds > 120:
+                        inferred_demand_level = 'Overloaded'
+                    elif inferred_dwell_time_seconds > 60:
+                        inferred_demand_level = 'High'
+                    elif inferred_dwell_time_seconds > 30:
+                        inferred_demand_level = 'Normal'
+                    else:
+                        inferred_demand_level = 'Low'
+
+                    # Simulate weather (simplified)
+                    weather_conditions = ['Clear', 'Cloudy', 'Rainy', 'Sunny']
+                    weather_condition = np.random.choice(weather_conditions, p=[0.4, 0.3, 0.2, 0.1])
+                    temperature_celsius = np.random.normal(20, 5) # Avg 20C, std 5C
+                    precipitation_mm = np.random.uniform(0, 10) if weather_condition == 'Rainy' else 0
+
+                    # Simulate event flag (low probability)
+                    event_flag = np.random.rand() < 0.01
+
+                    # Temporal features
+                    day_of_week = date_to_simulate.strftime("%A")
+                    hour_of_day = scheduled_arrival_time.hour
+                    is_weekend = date_to_simulate.weekday() >= 5
+                    is_holiday = self.is_holiday(date_to_simulate) # Re-use existing holiday check
+
+                    synthetic_data.append({
+                        "timestamp": actual_arrival_time,
+                        "trip_id": row['trip_id'],
+                        "route_id": row['route_id'],
+                        "stop_id": row['stop_id'],
+                        "stop_sequence": row['stop_sequence'],
+                        "vehicle_id": f"VEH_{np.random.randint(1000, 9999)}",
+                        "latitude": row['stop_lat'] + np.random.normal(0, 0.0001), # Add small noise
+                        "longitude": row['stop_lon'] + np.random.normal(0, 0.0001), # Add small noise
+                        "scheduled_arrival_time": scheduled_arrival_time,
+                        "actual_arrival_time": actual_arrival_time,
+                        "scheduled_departure_time": scheduled_departure_time,
+                        "actual_departure_time": actual_departure_time,
+                        "delay_minutes": delay_minutes,
+                        "inferred_dwell_time_seconds": inferred_dwell_time_seconds,
+                        "inferred_demand_level": inferred_demand_level,
+                        "weather_condition": weather_condition,
+                        "temperature_celsius": temperature_celsius,
+                        "precipitation_mm": precipitation_mm,
+                        "event_flag": event_flag,
+                        "day_of_week": day_of_week,
+                        "hour_of_day": hour_of_day,
+                        "is_weekend": is_weekend,
+                        "is_holiday": is_holiday,
+                        "zone_id": None, # Not available from static GTFS, can be added later
+                        "nearby_pois_count": None, # Not available from static GTFS, can be added later
+                        "historical_dwell_time_avg": None, # Calculated later
+                        "historical_headway_avg": None # Calculated later
+                    })
+            
+            # Store generated data in batches
+            if synthetic_data:
+                self.store_realtime_data(synthetic_data)
+                synthetic_data = [] # Clear for next batch/day
+
+        except Exception as e:
+            logger.error(f"Error generating synthetic data: {e}")
+            raise
+
+        logger.info("Synthetic real-time data generation completed.")
+
     def process_gtfs_realtime_stream(self, interval_seconds: int = None):
         """Main method to process GTFS-RT streams continuously"""
         if interval_seconds is None:

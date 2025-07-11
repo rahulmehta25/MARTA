@@ -152,7 +152,7 @@ class GTFSIngestor:
             "gtfs_trips": """
                 CREATE TABLE IF NOT EXISTS gtfs_trips (
                     trip_id VARCHAR(255) PRIMARY KEY,
-                    route_id VARCHAR(255) REFERENCES gtfs_routes(route_id),
+                    route_id VARCHAR(255),
                     service_id VARCHAR(255),
                     trip_short_name VARCHAR(255),
                     trip_headsign VARCHAR(255),
@@ -165,10 +165,10 @@ class GTFSIngestor:
             """,
             "gtfs_stop_times": """
                 CREATE TABLE IF NOT EXISTS gtfs_stop_times (
-                    trip_id VARCHAR(255) REFERENCES gtfs_trips(trip_id),
+                    trip_id VARCHAR(255),
                     arrival_time VARCHAR(8),
                     departure_time VARCHAR(8),
-                    stop_id VARCHAR(255) REFERENCES gtfs_stops(stop_id),
+                    stop_id VARCHAR(255),
                     stop_sequence INTEGER,
                     stop_headsign VARCHAR(255),
                     pickup_type INTEGER,

@@ -256,9 +256,9 @@ class SimpleGTFSIngestion:
             with conn.cursor() as cursor:
                 extras.execute_values(
                     cursor,
-                    """INSERT INTO unified_data 
+                    """INSERT INTO unified_realtime_historical_data 
                     (timestamp, trip_id, stop_id, route_id, vehicle_id, latitude, longitude,
-                     scheduled_arrival, actual_arrival, delay_minutes, dwell_time_seconds,
+                     scheduled_arrival_time, actual_arrival_time, delay_minutes, inferred_dwell_time_seconds,
                      inferred_demand_level, weather_condition, temperature_celsius, event_flag,
                      day_of_week, hour_of_day, is_weekend) VALUES %s""",
                     batch

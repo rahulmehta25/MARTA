@@ -355,7 +355,7 @@ class DemandForecaster:
             'feature_names': feature_names
         }
     
-    def train_models(self, days_back: int = 30) -> Dict[str, Any]:
+    def train(self, days_back: int = 30) -> Dict[str, Any]:
         """Train both LSTM and XGBoost models"""
         logger.info("Starting model training...")
         
@@ -430,28 +430,52 @@ class DemandForecaster:
                 self.scalers['lstm'] = pickle.load(f)
             logger.info("Loaded LSTM scaler")
     
-    def predict_demand(self, stop_id: str, timestamp: datetime, 
-                      model_type: str = 'xgboost') -> Dict[str, Any]:
-        """Predict demand for a specific stop and time"""
-        if model_type not in self.models:
-            raise ValueError(f"Model {model_type} not available")
+    def predict(self, sample_predictions: int = 5):
+        """Make predictions using the trained models"""
+        logger.info("Starting demand prediction...")
+
+        if not self.models:
+            self.load_models()
+            if not self.models:
+                logger.warning("No models loaded for prediction. Please train models first.")
+                return
+
+        # Get some sample stop_ids from the database
+        if not self.db_connection:
+            self.create_db_connection()
         
-        # Get recent data for the stop
-        recent_data = self.get_stop_recent_data(stop_id, hours=24)
+        try:
+            with self.db_connection.cursor() as cursor:
+                cursor.execute("SELECT DISTINCT stop_id FROM gtfs_stops LIMIT %s", (sample_predictions,))
+                sample_stop_ids = [row[0] for row in cursor.fetchall()]
+        except Exception as e:
+            logger.error(f"Error fetching sample stop_ids: {e}")
+            sample_stop_ids = []
+
+        if not sample_stop_ids:
+            logger.warning("No sample stop_ids found for prediction.")
+            return
+
+        # Generate some future timestamps for prediction
+        now = datetime.now()
+        sample_timestamps = [now + timedelta(hours=i) for i in range(sample_predictions)]
+
+        predictions_results = {}
+        for model_name, model in self.models.items():
+            logger.info(f"Making predictions with {model_name} model...")
+            model_predictions = []
+            for i in range(sample_predictions):
+                stop_id = sample_stop_ids[i % len(sample_stop_ids)] # Cycle through available stops
+                timestamp = sample_timestamps[i]
+                try:
+                    prediction = self.predict_demand(stop_id, timestamp, model_type=model_name)
+                    model_predictions.append(prediction)
+                except Exception as e:
+                    logger.error(f"Error predicting for {stop_id} at {timestamp} with {model_name}: {e}")
+            predictions_results[model_name] = model_predictions
+            logger.info(f"Sample predictions for {model_name}: {model_predictions}")
         
-        if recent_data.empty:
-            return {
-                'stop_id': stop_id,
-                'timestamp': timestamp,
-                'predicted_demand': 0,
-                'demand_level': 'Low',
-                'confidence': 0.0
-            }
-        
-        if model_type == 'lstm':
-            return self._predict_lstm(recent_data, stop_id, timestamp)
-        else:
-            return self._predict_xgboost(recent_data, stop_id, timestamp)
+        return predictions_results
     
     def _predict_lstm(self, data: pd.DataFrame, stop_id: str, timestamp: datetime) -> Dict[str, Any]:
         """Make LSTM prediction"""
@@ -558,18 +582,28 @@ class DemandForecaster:
             logger.error(f"Error fetching stop data: {e}")
             return pd.DataFrame()
     
-    def get_model_performance(self) -> Dict[str, Any]:
-        """Get performance metrics for all models"""
-        performance = {}
-        
-        for model_name, model in self.models.items():
-            if hasattr(model, 'best_score_'):
-                performance[model_name] = {
-                    'best_score': model.best_score_,
-                    'n_estimators': model.n_estimators if hasattr(model, 'n_estimators') else None
-                }
-        
-        return performance
+    def evaluate(self):
+        """Evaluate the trained models and log performance metrics"""
+        logger.info("Evaluating models...")
+
+        if not self.models:
+            self.load_models()
+            if not self.models:
+                logger.warning("No models loaded for evaluation. Please train models first.")
+                return
+
+        performance_metrics = self.get_model_performance()
+
+        if not performance_metrics:
+            logger.warning("No performance metrics available for evaluation.")
+            return
+
+        for model_name, metrics in performance_metrics.items():
+            logger.info(f"--- {model_name.upper()} Model Performance ---")
+            for metric_name, value in metrics.items():
+                logger.info(f"  {metric_name.replace('_', ' ').title()}: {value:.4f}")
+
+        logger.info("Model evaluation completed.")
 
 
 def main():
@@ -591,6 +625,12 @@ def main():
             logger.info(f"  RMSE: {result['metrics']['rmse']:.4f}")
         else:
             logger.error(f"{model_name.upper()} Error: {result['error']}")
+
+    # Evaluate models
+    forecaster.evaluate()
+
+    # Make sample predictions
+    forecaster.predict()
 
 
 if __name__ == "__main__":
