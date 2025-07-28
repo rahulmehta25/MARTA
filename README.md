@@ -7,6 +7,7 @@ A comprehensive machine learning system that uses historical and real-time MARTA
 This platform provides:
 - **Real-time demand forecasting** using LSTM and XGBoost models
 - **Route optimization simulation** with heuristic algorithms
+- **Modern React UI** with interactive maps and real-time data visualization
 - **Interactive dashboards** for monitoring and visualization
 - **Data quality monitoring** and alerting systems
 - **Model explainability** for stakeholder trust
@@ -33,16 +34,41 @@ This platform provides:
 └─────────────────┘    └─────────────────┘    └─────────────────┘
 ```
 
+## 🎨 Modern UI Features
+
+The platform now includes a sophisticated React-based frontend with:
+
+- **Interactive Map Visualization**: Real-time transit data on Mapbox maps
+- **Demand Heatmaps**: Visual representation of passenger demand patterns
+- **Route Optimization Interface**: Interactive tools for route planning
+- **Real-time Data Dashboard**: Live updates of transit system status
+- **Responsive Design**: Works seamlessly on desktop and mobile devices
+- **Dark/Light Theme Support**: User preference for different viewing modes
+- **Advanced Search**: Find stops, routes, and optimization scenarios
+- **Analytics Panels**: Detailed insights and performance metrics
+
+### Frontend Technology Stack
+
+- **React 18** with TypeScript
+- **Vite** for fast development and building
+- **Tailwind CSS** for styling
+- **Radix UI** for accessible components
+- **Mapbox GL** for interactive maps
+- **Framer Motion** for animations
+- **Zustand** for state management
+- **React Query** for data fetching
+
 ## 🚀 Quick Start
 
 ### Prerequisites
 
 - Python 3.9+
+- Node.js 18+ and npm
 - PostgreSQL with PostGIS extension
 - MARTA API key (for GTFS-RT data)
 - OpenWeatherMap API key (optional)
 
-### Installation
+### Automated Setup (Recommended)
 
 1. **Clone the repository**
    ```bash
@@ -52,51 +78,87 @@ This platform provides:
 
 2. **Create virtual environment**
    ```bash
-   python3 -m venv marta_env
-   source marta_env/bin/activate  # On Windows: marta_env\Scripts\activate
+   python3 -m venv marta_env_new
+   source marta_env_new/bin/activate
    ```
 
-3. **Install dependencies**
+3. **Run the development startup script**
+   ```bash
+   ./start_development.sh
+   ```
+   
+   This script will:
+   - Install frontend dependencies
+   - Start the backend API server
+   - Start the frontend development server
+   - Set up proxy configuration
+
+4. **Configure API keys (Optional)**
+   ```bash
+   # Edit .env file with your actual API keys
+   nano .env
+   ```
+
+### Manual Setup
+
+1. **Create virtual environment**
+   ```bash
+   python3 -m venv marta_env_new
+   source marta_env_new/bin/activate  # On Windows: marta_env_new\Scripts\activate
+   ```
+
+2. **Install Python dependencies**
    ```bash
    pip install -r requirements.txt
    ```
 
+3. **Install frontend dependencies**
+   ```bash
+   cd frontend
+   npm install
+   cd ..
+   ```
+
 4. **Set up environment variables**
    ```bash
-   cp .env.example .env
+   cp env.example .env
    # Edit .env with your configuration
    ```
 
-5. **Set up database**
+5. **Set up database (Optional for development)**
    ```bash
    # Create PostgreSQL database
    createdb marta_db
    
    # Install PostGIS extension
    psql -d marta_db -c "CREATE EXTENSION postgis;"
-   ```
-
-6. **Download GTFS data**
-   ```bash
-   # Download from MARTA Developer Portal
-   # Place in data/raw/gtfs_static/gtfs_static.zip
+   
+   # Run database setup
+   python setup_real_marta_data.py
    ```
 
 ### Running the System
 
-1. **Start data ingestion**
+1. **Start the API server**
    ```bash
-   # Ingest GTFS static data
-   python src/data_ingestion/gtfs_ingestor.py
-   
-   # Start real-time processing (in background)
-   python src/data_ingestion/gtfs_realtime_processor.py &
+   python run_api.py
    ```
 
-2. **Train models**
+2. **Start the frontend**
    ```bash
-   python src/models/demand_forecaster.py
+   cd frontend && npm start
    ```
+
+3. **Start the dashboard**
+   ```bash
+   streamlit run src/visualization/demo_dashboard.py
+   ```
+
+4. **Access the platform**
+   - Backend API: http://localhost:8001
+   - Frontend: http://localhost:3000
+   - API Docs: http://localhost:8001/docs
+   - Dashboard: http://localhost:8501
 
 3. **Launch dashboard**
    ```bash

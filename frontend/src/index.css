@@ -1,0 +1,248 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    /* MARTA Design System Colors */
+    --background: 0 0% 100%;
+    --foreground: 0 0% 0%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 0%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 0%;
+
+    /* MARTA Blue as primary */
+    --primary: 207 100% 51%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Light gray for secondary */
+    --secondary: 0 0% 96%;
+    --secondary-foreground: 0 0% 0%;
+
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 45%;
+
+    --accent: 0 0% 96%;
+    --accent-foreground: 0 0% 0%;
+
+    /* MARTA Red for destructive */
+    --destructive: 0 100% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 0 0% 90%;
+    --input: 0 0% 90%;
+    --ring: 207 100% 51%;
+
+    --radius: 0.75rem;
+
+    /* MARTA Transit Colors */
+    --marta-blue: 207 100% 51%;
+    --marta-green: 141 100% 39%;
+    --marta-orange: 36 100% 50%;
+    --marta-red: 0 100% 60%;
+    
+    /* Transit Status Colors */
+    --high-demand: 0 100% 60%;
+    --medium-demand: 36 100% 50%;
+    --low-demand: 141 100% 39%;
+    --optimal: 207 100% 51%;
+    
+    /* Map Theme */
+    --map-background: 0 0% 98%;
+    --map-overlay: 0 0% 0%;
+    --map-overlay-foreground: 0 0% 100%;
+    
+    /* Gradients */
+    --gradient-demand: linear-gradient(135deg, hsl(var(--high-demand)), hsl(var(--medium-demand)));
+    --gradient-primary: linear-gradient(135deg, hsl(var(--marta-blue)), hsl(var(--marta-blue) / 0.8));
+    --gradient-overlay: linear-gradient(180deg, transparent, hsl(var(--background) / 0.8));
+
+    /* Animations */
+    --animation-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    --animation-smooth: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --animation-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* Shadows */
+    --shadow-sm: 0 1px 2px 0 hsl(var(--foreground) / 0.05);
+    --shadow-md: 0 4px 6px -1px hsl(var(--foreground) / 0.1), 0 2px 4px -1px hsl(var(--foreground) / 0.06);
+    --shadow-lg: 0 10px 15px -3px hsl(var(--foreground) / 0.1), 0 4px 6px -2px hsl(var(--foreground) / 0.05);
+    --shadow-transit: 0 8px 25px -8px hsl(var(--marta-blue) / 0.3);
+  }
+
+  .dark {
+    --background: 0 0% 6%;
+    --foreground: 0 0% 98%;
+
+    --card: 0 0% 9%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 0 0% 9%;
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 207 100% 51%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 0 0% 14%;
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 0 0% 14%;
+    --muted-foreground: 0 0% 63%;
+
+    --accent: 0 0% 14%;
+    --accent-foreground: 0 0% 98%;
+
+    --destructive: 0 100% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 0 0% 14%;
+    --input: 0 0% 14%;
+    --ring: 207 100% 51%;
+    
+    /* Dark theme map */
+    --map-background: 0 0% 9%;
+    --map-overlay: 0 0% 100%;
+    --map-overlay-foreground: 0 0% 0%;
+    
+    --gradient-overlay: linear-gradient(180deg, transparent, hsl(var(--background) / 0.9));
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+
+  /* Transit-specific utility classes */
+  .transit-card {
+    @apply bg-card border border-border rounded-xl shadow-sm hover:shadow-md transition-all duration-smooth;
+  }
+
+  .demand-high {
+    @apply text-red-600 bg-red-50 border-red-200 dark:bg-red-950/20 dark:border-red-800;
+  }
+
+  .demand-medium {
+    @apply text-orange-600 bg-orange-50 border-orange-200 dark:bg-orange-950/20 dark:border-orange-800;
+  }
+
+  .demand-low {
+    @apply text-green-600 bg-green-50 border-green-200 dark:bg-green-950/20 dark:border-green-800;
+  }
+
+  .route-optimal {
+    @apply text-blue-600 bg-blue-50 border-blue-200 dark:bg-blue-950/20 dark:border-blue-800;
+  }
+
+  /* Enhanced map controls */
+  .mapboxgl-ctrl-group {
+    @apply bg-card/95 backdrop-blur-sm border border-border/50 rounded-xl shadow-lg;
+  }
+
+  .mapboxgl-ctrl-group button {
+    @apply bg-transparent hover:bg-secondary/80 border-b border-border/30 last:border-b-0 transition-all duration-smooth;
+  }
+
+  .mapboxgl-popup-content {
+    @apply bg-card border border-border rounded-xl shadow-xl p-0 overflow-hidden;
+  }
+
+  .mapboxgl-popup-tip {
+    @apply border-t-card;
+  }
+
+  /* Enhanced transition utilities */
+  .transition-smooth {
+    transition: all var(--animation-smooth);
+  }
+
+  .transition-fast {
+    transition: all var(--animation-fast);
+  }
+
+  /* Glass morphism effects */
+  .glass {
+    @apply bg-white/10 backdrop-blur-md border border-white/20;
+  }
+
+  .glass-dark {
+    @apply bg-black/10 backdrop-blur-md border border-white/10;
+  }
+
+  /* Pulse animations for high demand areas */
+  .demand-pulse {
+    animation: demand-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  @keyframes demand-pulse {
+    0%, 100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.7;
+      transform: scale(1.1);
+    }
+  }
+
+  /* Shimmer loading effect */
+  .shimmer {
+    background: linear-gradient(90deg, 
+      hsl(var(--muted)) 0%, 
+      hsl(var(--muted-foreground) / 0.1) 50%, 
+      hsl(var(--muted)) 100%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+
+  @keyframes shimmer {
+    0% {
+      background-position: -200% 0;
+    }
+    100% {
+      background-position: 200% 0;
+    }
+  }
+
+  /* Floating animation for important elements */
+  .float {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-4px);
+    }
+  }
+
+  /* Glow effects for active states */
+  .glow {
+    box-shadow: 0 0 20px hsl(var(--primary) / 0.3);
+  }
+
+  .glow-success {
+    box-shadow: 0 0 20px hsl(var(--marta-green) / 0.4);
+  }
+
+  .glow-warning {
+    box-shadow: 0 0 20px hsl(var(--marta-orange) / 0.4);
+  }
+
+  .glow-danger {
+    box-shadow: 0 0 20px hsl(var(--marta-red) / 0.4);
+  }
+}
