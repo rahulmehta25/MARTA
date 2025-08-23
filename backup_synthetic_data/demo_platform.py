@@ -1,9 +1,3 @@
-"""
-WARNING: This file has been updated to use real data instead of demo data.
-Demo platform capabilities have been disabled.
-Use real data instead.
-"""
-
 #!/usr/bin/env python3
 """
 MARTA Demand Forecasting & Route Optimization Platform - Demo Script
@@ -27,10 +21,6 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 def demo_platform_capabilities():
-    # DISABLED: Use real data instead
-    logger.warning('Demo platform capabilities are disabled. Use real data instead.')
-    raise Exception('Demo platform capabilities are disabled. Use real data instead.')
-    # Original demo platform capabilities code below (disabled):
     """Demonstrate all platform capabilities"""
     print("=" * 80)
     print("🚇 MARTA DEMAND FORECASTING & ROUTE OPTIMIZATION PLATFORM")

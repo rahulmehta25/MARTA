@@ -67,9 +67,11 @@ class Settings(BaseSettings):
     LOGS_DIR: str = "logs"
     MODELS_DIR: str = "models"
     
-    class Config:
-        env_file = ".env"
-        case_sensitive = True
+    model_config = {
+        "env_file": ".env",
+        "case_sensitive": True,
+        "extra": "ignore"
+    }
 
 
 # Global settings instance

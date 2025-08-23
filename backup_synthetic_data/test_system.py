@@ -1,9 +1,3 @@
-"""
-WARNING: This file has been updated to use real data instead of synthetic data.
-Synthetic test data generation has been disabled.
-Use real data instead.
-"""
-
 #!/usr/bin/env python3
 """
 Test script for MARTA Demand Forecasting Platform
@@ -42,10 +36,6 @@ def test_configuration():
         raise
 
 def test_data_structures():
-    # DISABLED: Use real data instead
-    logger.warning('Synthetic test data generation is disabled. Use real data instead.')
-    raise Exception('Synthetic test data generation is disabled. Use real data instead.')
-    # Original test data generation code below (disabled):
     """Test data structure creation"""
     logger.info("Testing data structures...")
     

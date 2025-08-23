@@ -1,9 +1,3 @@
-"""
-WARNING: This file has been updated to use real data instead of sample data.
-Sample events generation has been disabled.
-Use real event data instead.
-"""
-
 import os
 import logging
 import requests
@@ -237,10 +231,6 @@ def scrape_state_farm_arena_events():
         return []
 
 def generate_sample_events():
-    # DISABLED: Use real data instead
-    logger.warning('Sample events generation is disabled. Use real event data instead.')
-    raise Exception('Sample events generation is disabled. Use real event data instead.')
-    # Original sample events generation code below (disabled):
     """Generate sample events for demonstration when scraping fails"""
     logging.info("Generating sample events data")
     

@@ -1,9 +1,3 @@
-"""
-WARNING: This file has been updated to use real data instead of demo data.
-Demo GTFS data creation has been disabled.
-Use run_real_data_ingestion.py for real data ingestion.
-"""
-
 #!/usr/bin/env python3
 """
 GTFS Data Ingestion Module
@@ -160,10 +154,6 @@ class GTFSIngestion:
                 conn.close()
     
     def create_demo_gtfs_data(self, output_path: str = "data/static/demo_gtfs.zip"):
-        # DISABLED: Use real data instead
-        logger.warning('Demo GTFS data creation is disabled. Use real data ingestion instead.')
-        raise Exception('Demo GTFS data creation is disabled. Use run_real_data_ingestion.py for real data ingestion.')
-        # Original demo GTFS creation code below (disabled):
         """Create demo GTFS data for testing"""
         logger.info("Creating demo GTFS data...")
         
@@ -295,10 +285,6 @@ class GTFSIngestion:
                 logger.info(f"Ingesting GTFS data from {gtfs_zip_path}")
                 self.ingest_gtfs_static(gtfs_zip_path)
             elif create_demo:
-            # DISABLED: Use real data instead
-            logger.warning('Demo data creation is disabled. Use real data ingestion instead.')
-            raise Exception('Demo data creation is disabled. Use run_real_data_ingestion.py for real data ingestion.')
-            # Original demo creation code below (disabled):
                 logger.info("Creating and ingesting demo GTFS data")
                 demo_path = self.create_demo_gtfs_data()
                 self.ingest_gtfs_static(demo_path)

@@ -1,9 +1,3 @@
-"""
-WARNING: This file has been updated to use real data instead of sample data.
-Sample data creation has been disabled.
-Use real data from database instead.
-"""
-
 #!/usr/bin/env python3
 """
 MARTA Demand Forecasting & Route Optimization Platform - Fixed Dashboard
@@ -93,10 +87,6 @@ def load_database_data():
         return create_sample_data()
 
 def create_sample_data():
-    # DISABLED: Use real data instead
-    logger.warning('Sample data creation is disabled. Use real data from database instead.')
-    raise Exception('Sample data creation is disabled. Use real data from database instead.')
-    # Original sample data creation code below (disabled):
     """Create sample data for demonstration when database is not available"""
     # Sample stops data
     stops_data = {
@@ -121,10 +111,6 @@ def create_sample_data():
     return stops_df, routes_df, unified_df
 
 def create_sample_unified_data(stops_df, routes_df):
-    # DISABLED: Use real data instead
-    logger.warning('Sample unified data creation is disabled. Use real data from database instead.')
-    raise Exception('Sample unified data creation is disabled. Use real data from database instead.')
-    # Original sample unified data creation code below (disabled):
     """Create sample unified data for demonstration"""
     # Generate sample time series data
     base_date = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)

@@ -1,9 +1,3 @@
-"""
-WARNING: This file has been updated to use real data instead of demo data.
-Demo data creation has been disabled.
-Use run_real_data_ingestion.py for real data ingestion.
-"""
-
 #!/usr/bin/env python3
 """
 Simplified GTFS Data Ingestion for Demo
@@ -41,10 +35,6 @@ class SimpleGTFSIngestion:
         }
     
     def create_demo_data(self):
-        # DISABLED: Use real data instead
-        logger.warning('Demo data creation is disabled. Use real data ingestion instead.')
-        raise Exception('Demo data creation is disabled. Use run_real_data_ingestion.py for real data ingestion.')
-        # Original demo data creation code below (disabled):
         """Create comprehensive demo data for the platform"""
         logger.info("Creating demo data for MARTA Demand Forecasting Platform...")
         

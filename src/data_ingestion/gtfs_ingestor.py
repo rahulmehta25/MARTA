@@ -338,10 +338,10 @@ class GTFSIngestor:
             self.create_db_connection()
             
             # Check for required files
-            for table_name in self.gtfs_files_config.keys():
-                table_name_clean = table_name.replace('.txt', '')
+            for config in self.gtfs_files_config.values():
+                table_name = config['table']
                 with self.db_connection.cursor() as cursor:
-                    cursor.execute(f"SELECT COUNT(*) FROM {table_name_clean}")
+                    cursor.execute(f"SELECT COUNT(*) FROM {table_name}")
                     count = cursor.fetchone()[0]
                     validation_results[f"{table_name}_has_data"] = count > 0
             

@@ -1,10 +1,4 @@
 """
-WARNING: This file has been updated to use real data instead of synthetic data.
-Synthetic data generation has been disabled.
-Use run_real_data_ingestion.py for real data ingestion.
-"""
-
-"""
 GTFS-Realtime Data Processor
 Handles continuous polling and processing of MARTA's GTFS-RT feeds
 """
@@ -397,10 +391,6 @@ class GTFSRealtimeProcessor:
         logger.info("Historical GTFS-RT data ingestion completed.")
 
     def generate_synthetic_realtime_data(self, num_days: int = 7):
-        # DISABLED: Use real data instead
-        logger.warning('Synthetic data generation is disabled. Use real data ingestion instead.')
-        return False
-        # Original synthetic data generation code below (disabled):
         """Generates and ingests synthetic real-time data based on static GTFS.
         This is used when real-time API is unavailable or for demo purposes.
         """
