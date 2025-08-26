@@ -90,4 +90,40 @@ scipy>=1.11.0
 asyncpg>=0.29.0
 
 # Enhanced Data Processing
-lru-dict>=1.2.0 
+lru-dict>=1.2.0
+
+# Performance Optimization
+locust>=2.15.0
+pympler>=1.0.0
+memory-profiler>=0.61.0
+line-profiler>=4.0.0
+py-spy>=0.3.0
+
+# Caching
+redis>=4.6.0
+aioredis>=2.0.0
+python-memcached>=1.59
+diskcache>=5.6.0
+
+# APM and Monitoring
+opentelemetry-api>=1.20.0
+opentelemetry-sdk>=1.20.0
+opentelemetry-instrumentation-fastapi>=0.41b0
+opentelemetry-instrumentation-requests>=0.41b0
+opentelemetry-instrumentation-psycopg2>=0.41b0
+opentelemetry-instrumentation-redis>=0.41b0
+opentelemetry-exporter-otlp>=1.20.0
+prometheus-client>=0.17.0
+grafana-api>=1.0.0
+
+# Load Testing
+locust>=2.15.0
+gevent>=23.0.0
+
+# Compression
+brotli>=1.0.0
+zstandard>=0.21.0
+
+# Web Performance
+web-vitals>=0.1.0
+lighthouse>=9.0.0 
