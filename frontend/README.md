@@ -176,9 +176,30 @@ npm run type-check   # TypeScript type checking
 
 ## 🚀 Deployment
 
-The application is optimized for modern deployment platforms:
+### Vercel Deployment (Recommended)
 
-- **Vercel/Netlify**: Static site deployment
+This project is optimized for Vercel deployment with automatic builds:
+
+```bash
+# Install Vercel CLI
+npm i -g vercel
+
+# Deploy to Vercel
+vercel
+
+# Set environment variables (in Vercel dashboard)
+VITE_API_BASE_URL=https://your-api-domain.vercel.app
+```
+
+**Vercel Configuration:**
+- ✅ Framework: Vite
+- ✅ Build Command: `npm run build`
+- ✅ Output Directory: `dist`
+- ✅ SPA Routing: Configured via `vercel.json`
+
+### Other Platforms
+
+- **Netlify**: Static site deployment with build optimization
 - **Docker**: Containerized deployment
 - **PWA Support**: Offline functionality and app-like experience
 - **CDN Optimization**: Fast global content delivery

@@ -126,7 +126,7 @@ All colors MUST be HSL.
 
   /* Transit-specific utility classes */
   .transit-card {
-    @apply bg-card border border-border rounded-xl shadow-sm hover:shadow-md transition-all duration-smooth;
+    @apply bg-card border border-border rounded-xl shadow-sm hover:shadow-md transition-all duration-300;
   }
 
   .demand-high {
@@ -151,7 +151,7 @@ All colors MUST be HSL.
   }
 
   .mapboxgl-ctrl-group button {
-    @apply bg-transparent hover:bg-secondary/80 border-b border-border/30 last:border-b-0 transition-all duration-smooth;
+    @apply bg-transparent hover:bg-secondary/80 border-b border-border/30 last:border-b-0 transition-all duration-300;
   }
 
   .mapboxgl-popup-content {
