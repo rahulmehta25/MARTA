@@ -3,8 +3,8 @@ import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { useAppStore } from '@/store';
 
-// Using a demo Mapbox token for demonstration
-const MAPBOX_TOKEN = 'pk.eyJ1IjoiZXhhbXBsZXMiLCJhIjoiY2p1dDBzcDlyMDFrYjN5bWtwMHE5eXBtMiJ9.YfLy-qDN3SJRU8bBVqAXBQ';
+// Get Mapbox token from environment variable or use public token
+const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN || 'pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw';
 
 interface TransitMapProps {
   className?: string;
@@ -84,12 +84,17 @@ export const TransitMap: React.FC<TransitMapProps> = ({ className }) => {
     return el;
   };
 
-  // Token input component removed - using demo token
+  // Initialize map with error handling
   useEffect(() => {
     if (!mapContainer.current) return;
 
     // Set the Mapbox access token
     mapboxgl.accessToken = MAPBOX_TOKEN;
+    
+    // Check if token is valid
+    if (!MAPBOX_TOKEN || MAPBOX_TOKEN === 'your_mapbox_token_here') {
+      console.warn('⚠️ Mapbox token not configured. Map may not display properly.');
+    }
 
     try {
       // Initialize map
