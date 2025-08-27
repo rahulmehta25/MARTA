@@ -1,14 +1,22 @@
 // API client for MARTA backend
-import axios from 'axios';
-
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
-const api = axios.create({
-  baseURL: API_BASE_URL,
-  timeout: 10000,
-  headers: {
-    'Content-Type': 'application/json'
+export const apiService = {
+  async get(endpoint) {
+    const response = await fetch(`${API_BASE_URL}${endpoint}`);
+    if (!response.ok) throw new Error('API request failed');
+    return response.json();
+  },
+  
+  async post(endpoint, data) {
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    if (!response.ok) throw new Error('API request failed');
+    return response.json();
   }
-});
+};
 
-export default api;
+export default apiService;
