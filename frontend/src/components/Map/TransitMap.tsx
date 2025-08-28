@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { useAppStore } from '@/store';
+import { martaStops, martaRoutes } from '@/data/martaData';
 
 // Get Mapbox token from environment variable or use public token
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN || 'pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw';
@@ -26,17 +27,21 @@ export const TransitMap: React.FC<TransitMapProps> = ({ className }) => {
     setSelectedRoute,
   } = useAppStore();
 
-  // Enhanced demo data for MARTA system
-  const demoStops = [
-    { id: '1', name: 'Five Points', lat: 33.7537, lng: -84.3918, demandLevel: 'high' as const, currentPassengers: 45, predictedDemand: 52, routes: ['Red', 'Blue'] },
-    { id: '2', name: 'Peachtree Center', lat: 33.7596, lng: -84.3875, demandLevel: 'medium' as const, currentPassengers: 32, predictedDemand: 38, routes: ['Red', 'Gold'] },
-    { id: '3', name: 'Midtown', lat: 33.7806, lng: -84.3831, demandLevel: 'high' as const, currentPassengers: 41, predictedDemand: 47, routes: ['Red'] },
-    { id: '4', name: 'North Avenue', lat: 33.7718, lng: -84.3854, demandLevel: 'low' as const, currentPassengers: 18, predictedDemand: 22, routes: ['Red', 'Gold'] },
-    { id: '5', name: 'Buckhead', lat: 33.8484, lng: -84.3671, demandLevel: 'medium' as const, currentPassengers: 28, predictedDemand: 33, routes: ['Red'] },
-    { id: '6', name: 'Lindbergh Center', lat: 33.8230, lng: -84.3694, demandLevel: 'high' as const, currentPassengers: 52, predictedDemand: 58, routes: ['Red', 'Gold'] },
-    { id: '7', name: 'Arts Center', lat: 33.7891, lng: -84.3871, demandLevel: 'medium' as const, currentPassengers: 35, predictedDemand: 29, routes: ['Red'] },
-    { id: '8', name: 'Civic Center', lat: 33.7664, lng: -84.3869, demandLevel: 'low' as const, currentPassengers: 15, predictedDemand: 18, routes: ['Red'] },
-  ];
+  // Get demand level based on number of routes (stations with more routes typically have higher demand)
+  const getDemandLevel = (routeCount: number): 'high' | 'medium' | 'low' => {
+    if (routeCount >= 3) return 'high';
+    if (routeCount === 2) return 'medium';
+    return 'low';
+  };
+
+  // Generate random passenger counts for demo
+  const getPassengerCount = (demandLevel: string) => {
+    switch(demandLevel) {
+      case 'high': return Math.floor(Math.random() * 30) + 40;
+      case 'medium': return Math.floor(Math.random() * 25) + 20;
+      default: return Math.floor(Math.random() * 20) + 5;
+    }
+  };
 
   const getMapStyle = () => {
     switch (mapStyle) {
@@ -49,9 +54,32 @@ export const TransitMap: React.FC<TransitMapProps> = ({ className }) => {
     }
   };
 
-  const createMarkerElement = (stop: typeof demoStops[0]) => {
+  const getDemandColor = (level: string) => {
+    switch (level) {
+      case 'high': return '#FF1744';
+      case 'medium': return '#FF9800'; 
+      case 'low': return '#00C853';
+      default: return '#2196F3';
+    }
+  };
+
+  const getRouteColor = (routeId: string) => {
+    const route = martaRoutes.find(r => r.id === routeId);
+    return route ? route.color : '#999999';
+  };
+
+  const createMarkerElement = (stop: any) => {
     const el = document.createElement('div');
     const isPulse = stop.demandLevel === 'high';
+    
+    // Determine marker color based on routes
+    let markerColor = '#999999';
+    if (stop.routes.length === 1) {
+      markerColor = getRouteColor(stop.routes[0]);
+    } else if (stop.routes.length > 1) {
+      // Multi-line stations get a purple color
+      markerColor = '#9C27B0';
+    }
     
     el.innerHTML = `
       <div class="relative">
@@ -59,7 +87,7 @@ export const TransitMap: React.FC<TransitMapProps> = ({ className }) => {
         <div style="
           width: 24px;
           height: 24px;
-          background: linear-gradient(135deg, ${getDemandColor(stop.demandLevel)}, ${getDemandColor(stop.demandLevel)}dd);
+          background: linear-gradient(135deg, ${markerColor}, ${markerColor}dd);
           border: 3px solid white;
           border-radius: 50%;
           box-shadow: 0 4px 12px rgba(0,0,0,0.25);
@@ -95,11 +123,6 @@ export const TransitMap: React.FC<TransitMapProps> = ({ className }) => {
     mapboxgl.accessToken = MAPBOX_TOKEN;
     console.log('Initializing map with token:', MAPBOX_TOKEN.substring(0, 20) + '...');
     
-    // Check if token is valid
-    if (!MAPBOX_TOKEN || MAPBOX_TOKEN === 'your_mapbox_token_here') {
-      console.warn('⚠️ Mapbox token not configured. Map may not display properly.');
-    }
-
     try {
       // Initialize map
       console.log('Creating map instance...');
@@ -138,12 +161,81 @@ export const TransitMap: React.FC<TransitMapProps> = ({ className }) => {
         markersRef.current.forEach(marker => marker.remove());
         markersRef.current = [];
 
-        // Add transit stops with enhanced markers
-        demoStops.forEach((stop) => {
-          const el = createMarkerElement(stop);
+        // Add all MARTA rail routes as colored lines
+        martaRoutes.forEach((route) => {
+          // Add source for each route
+          map.current!.addSource(`route-${route.id}`, {
+            type: 'geojson',
+            data: {
+              type: 'Feature',
+              properties: {
+                name: route.name,
+                color: route.color
+              },
+              geometry: {
+                type: 'LineString',
+                coordinates: route.coordinates
+              }
+            }
+          });
+
+          // Add layer for each route
+          map.current!.addLayer({
+            id: `route-${route.id}`,
+            type: 'line',
+            source: `route-${route.id}`,
+            layout: {
+              'line-join': 'round',
+              'line-cap': 'round'
+            },
+            paint: {
+              'line-color': route.color,
+              'line-width': [
+                'case',
+                ['boolean', ['feature-state', 'selected'], false],
+                6,
+                4
+              ],
+              'line-opacity': [
+                'case',
+                ['boolean', ['feature-state', 'selected'], false],
+                1,
+                0.7
+              ]
+            }
+          });
+
+          // Add click handler for route
+          map.current!.on('click', `route-${route.id}`, () => {
+            setSelectedRoute(route);
+          });
+
+          // Change cursor on hover
+          map.current!.on('mouseenter', `route-${route.id}`, () => {
+            if (map.current) map.current.getCanvas().style.cursor = 'pointer';
+          });
+          map.current!.on('mouseleave', `route-${route.id}`, () => {
+            if (map.current) map.current.getCanvas().style.cursor = '';
+          });
+        });
+
+        // Add all MARTA transit stops with enhanced markers
+        martaStops.forEach((stop) => {
+          const demandLevel = getDemandLevel(stop.routes.length);
+          const currentPassengers = getPassengerCount(demandLevel);
+          const predictedDemand = currentPassengers + Math.floor(Math.random() * 10);
+          
+          const stopData = {
+            ...stop,
+            demandLevel,
+            currentPassengers,
+            predictedDemand
+          };
+
+          const el = createMarkerElement(stopData);
           
           el.addEventListener('click', () => {
-            setSelectedStop(stop);
+            setSelectedStop(stopData);
             // Smooth fly to selected stop
             map.current?.flyTo({
               center: [stop.lng, stop.lat],
@@ -158,35 +250,46 @@ export const TransitMap: React.FC<TransitMapProps> = ({ className }) => {
 
           markersRef.current.push(marker);
 
-          // Enhanced popup with better styling
+          // Enhanced popup with better styling and route colors
+          const routeColors = stop.routes.map(r => {
+            const route = martaRoutes.find(rt => rt.id === r);
+            return route ? `<span style="color: ${route.color}; font-weight: bold;">${route.name}</span>` : r;
+          }).join(', ');
+
           const popup = new mapboxgl.Popup({
             offset: 30,
             closeButton: true,
             closeOnClick: false,
             className: 'custom-popup'
           }).setHTML(`
-            <div class="p-4 min-w-[200px]">
+            <div class="p-4 min-w-[250px]">
               <div class="flex items-center gap-2 mb-3">
-                <div class="w-3 h-3 rounded-full" style="background-color: ${getDemandColor(stop.demandLevel)}"></div>
+                <div class="w-3 h-3 rounded-full" style="background-color: ${getDemandColor(demandLevel)}"></div>
                 <h3 class="font-bold text-base">${stop.name}</h3>
               </div>
               <div class="space-y-2 text-sm">
                 <div class="flex justify-between">
+                  <span class="text-gray-600">Type:</span>
+                  <span class="font-semibold capitalize">${stop.type === 'rail' ? '🚇 Rail Station' : '🚌 Bus Stop'}</span>
+                </div>
+                <div class="flex justify-between items-center">
+                  <span class="text-gray-600">Lines:</span>
+                  <span>${routeColors}</span>
+                </div>
+                <div class="flex justify-between">
                   <span class="text-gray-600">Current:</span>
-                  <span class="font-semibold">${stop.currentPassengers} passengers</span>
+                  <span class="font-semibold">${currentPassengers} passengers</span>
                 </div>
                 <div class="flex justify-between">
                   <span class="text-gray-600">Predicted:</span>
-                  <span class="font-semibold">${stop.predictedDemand} passengers</span>
+                  <span class="font-semibold">${predictedDemand} passengers</span>
                 </div>
                 <div class="flex justify-between">
                   <span class="text-gray-600">Demand:</span>
-                  <span class="font-semibold capitalize" style="color: ${getDemandColor(stop.demandLevel)}">${stop.demandLevel}</span>
+                  <span class="font-semibold capitalize" style="color: ${getDemandColor(demandLevel)}">${demandLevel}</span>
                 </div>
-                <div class="flex justify-between">
-                  <span class="text-gray-600">Routes:</span>
-                  <span class="font-semibold">${stop.routes.join(', ')}</span>
-                </div>
+                ${stop.parking ? '<div class="flex justify-between"><span class="text-gray-600">Features:</span><span class="font-semibold">🅿️ Parking Available</span></div>' : ''}
+                ${stop.accessibility ? '<div class="flex justify-between"><span class="text-gray-600"></span><span class="font-semibold">♿ Accessible</span></div>' : ''}
               </div>
             </div>
           `);
@@ -200,17 +303,21 @@ export const TransitMap: React.FC<TransitMapProps> = ({ className }) => {
             type: 'geojson',
             data: {
               type: 'FeatureCollection',
-              features: demoStops.map(stop => ({
-                type: 'Feature',
-                properties: {
-                  demand: stop.predictedDemand,
-                  weight: stop.demandLevel === 'high' ? 1 : stop.demandLevel === 'medium' ? 0.6 : 0.3
-                },
-                geometry: {
-                  type: 'Point',
-                  coordinates: [stop.lng, stop.lat]
-                }
-              }))
+              features: martaStops.map(stop => {
+                const demandLevel = getDemandLevel(stop.routes.length);
+                const weight = demandLevel === 'high' ? 1 : demandLevel === 'medium' ? 0.6 : 0.3;
+                return {
+                  type: 'Feature',
+                  properties: {
+                    demand: getPassengerCount(demandLevel),
+                    weight: weight
+                  },
+                  geometry: {
+                    type: 'Point',
+                    coordinates: [stop.lng, stop.lat]
+                  }
+                };
+              })
             }
           });
 
@@ -250,45 +357,21 @@ export const TransitMap: React.FC<TransitMapProps> = ({ className }) => {
             }
           });
         }
-
-        // Add route lines
-        const routeCoordinates = [
-          [-84.3918, 33.7537], // Five Points
-          [-84.3875, 33.7596], // Peachtree Center  
-          [-84.3854, 33.7718], // North Avenue
-          [-84.3831, 33.7806], // Midtown
-          [-84.3871, 33.7891], // Arts Center
-          [-84.3694, 33.8230], // Lindbergh
-          [-84.3671, 33.8484], // Buckhead
-        ];
-
-        map.current!.addSource('route', {
-          type: 'geojson',
-          data: {
-            type: 'Feature',
-            properties: {},
-            geometry: {
-              type: 'LineString',
-              coordinates: routeCoordinates
-            }
-          }
-        });
-
-        map.current!.addLayer({
-          id: 'route',
-          type: 'line',
-          source: 'route',
-          layout: {
-            'line-join': 'round',
-            'line-cap': 'round'
-          },
-          paint: {
-            'line-color': '#2196F3',
-            'line-width': 4,
-            'line-opacity': 0.8
-          }
-        });
       });
+
+      // Handle selected route highlighting
+      if (selectedRoute && map.current.isStyleLoaded()) {
+        martaRoutes.forEach((route) => {
+          if (map.current!.getLayer(`route-${route.id}`)) {
+            map.current!.setPaintProperty(`route-${route.id}`, 'line-opacity', 
+              route.id === selectedRoute.id ? 1 : 0.3
+            );
+            map.current!.setPaintProperty(`route-${route.id}`, 'line-width', 
+              route.id === selectedRoute.id ? 6 : 3
+            );
+          }
+        });
+      }
 
     } catch (error) {
       console.error('Error initializing map:', error);
@@ -299,16 +382,7 @@ export const TransitMap: React.FC<TransitMapProps> = ({ className }) => {
       markersRef.current.forEach(marker => marker.remove());
       map.current?.remove();
     };
-  }, [mapStyle, showDemandHeatmap]);
-
-  const getDemandColor = (level: string) => {
-    switch (level) {
-      case 'high': return '#FF1744';
-      case 'medium': return '#FF9800'; 
-      case 'low': return '#00C853';
-      default: return '#2196F3';
-    }
-  };
+  }, [mapStyle, showDemandHeatmap, selectedRoute]);
 
   return (
     <div className={`relative w-full h-full ${className}`}>
@@ -319,12 +393,12 @@ export const TransitMap: React.FC<TransitMapProps> = ({ className }) => {
       />
       
       {/* Map overlays */}
-      <div className="absolute top-4 right-4 z-10 space-y-3">
+      <div className="absolute top-4 left-4 z-10 space-y-3">
         {/* Real-time Status */}
         <div className="bg-card/95 backdrop-blur-sm p-4 rounded-xl shadow-lg border border-border/50">
           <div className="text-sm font-semibold mb-2 flex items-center gap-2">
             <div className="w-2 h-2 bg-marta-green rounded-full animate-pulse"></div>
-            Live Status
+            Live System Status
           </div>
           <div className="space-y-1 text-xs">
             <div className="flex justify-between">
@@ -332,26 +406,52 @@ export const TransitMap: React.FC<TransitMapProps> = ({ className }) => {
               <span className="text-marta-green font-medium">Operational</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Active Stops:</span>
-              <span className="font-medium">{demoStops.length}</span>
+              <span className="text-muted-foreground">Active Stations:</span>
+              <span className="font-medium">{martaStops.length}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">High Demand:</span>
-              <span className="text-marta-red font-medium">
-                {demoStops.filter(s => s.demandLevel === 'high').length}
+              <span className="text-muted-foreground">Rail Lines:</span>
+              <span className="font-medium">{martaRoutes.length}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Transfer Stations:</span>
+              <span className="text-purple-500 font-medium">
+                {martaStops.filter(s => s.routes.length > 1).length}
               </span>
             </div>
           </div>
         </div>
 
-        {/* Map Legend */}
+        {/* Route Legend */}
+        <div className="bg-card/95 backdrop-blur-sm p-4 rounded-xl shadow-lg border border-border/50">
+          <div className="text-sm font-semibold mb-3">Rail Lines</div>
+          <div className="space-y-2">
+            {martaRoutes.map(route => (
+              <div 
+                key={route.id} 
+                className="flex items-center gap-2 text-xs cursor-pointer hover:opacity-80 transition-opacity"
+                onClick={() => setSelectedRoute(route)}
+              >
+                <div 
+                  className="w-3 h-3 rounded-full shadow-sm"
+                  style={{ backgroundColor: route.color }}
+                />
+                <span className={selectedRoute?.id === route.id ? 'font-bold' : ''}>
+                  {route.name}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Demand Levels Legend */}
         <div className="bg-card/95 backdrop-blur-sm p-4 rounded-xl shadow-lg border border-border/50">
           <div className="text-sm font-semibold mb-3">Demand Levels</div>
           <div className="space-y-2">
             {[
-              { level: 'high', color: '#FF1744', label: 'High' },
-              { level: 'medium', color: '#FF9800', label: 'Medium' },
-              { level: 'low', color: '#00C853', label: 'Low' }
+              { level: 'high', color: '#FF1744', label: 'High Demand' },
+              { level: 'medium', color: '#FF9800', label: 'Medium Demand' },
+              { level: 'low', color: '#00C853', label: 'Low Demand' }
             ].map(item => (
               <div key={item.level} className="flex items-center gap-2 text-xs">
                 <div 

@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Search, MapPin, Route, Clock } from 'lucide-react';
+import { Search, MapPin, Route, Clock, Train, Bus } from 'lucide-react';
 import { useAppStore } from '@/store';
 import { motion, AnimatePresence } from 'framer-motion';
+import { martaStops, martaRoutes, searchStops } from '@/data/martaData';
 
 interface SearchResult {
   id: string;
@@ -13,11 +14,19 @@ interface SearchResult {
 
 export const SearchBar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [recentSearches] = useState<SearchResult[]>([
-    { id: '1', type: 'stop', name: 'Five Points Station', subtitle: 'Red & Blue Lines', icon: <MapPin className="w-4 h-4" /> },
-    { id: '2', type: 'route', name: 'Red Line', subtitle: 'North Springs to Airport', icon: <Route className="w-4 h-4" /> },
-    { id: '3', type: 'stop', name: 'Peachtree Center', subtitle: 'Red & Gold Lines', icon: <MapPin className="w-4 h-4" /> },
-  ]);
+  const [recentSearches, setRecentSearches] = useState<SearchResult[]>(() => {
+    // Load recent searches from localStorage
+    const saved = localStorage.getItem('martaRecentSearches');
+    if (saved) {
+      return JSON.parse(saved);
+    }
+    // Default recent searches
+    return [
+      { id: 'FIVE_POINTS', type: 'stop', name: 'Five Points', subtitle: 'Red, Gold, Blue & Green Lines', icon: <Train className="w-4 h-4" /> },
+      { id: 'RED', type: 'route', name: 'Red Line', subtitle: 'North Springs to Airport', icon: <Route className="w-4 h-4 text-red-500" /> },
+      { id: 'LINDBERGH', type: 'stop', name: 'Lindbergh Center', subtitle: 'Red & Gold Lines • Parking Available', icon: <Train className="w-4 h-4" /> },
+    ];
+  });
   
   const {
     searchQuery,
@@ -31,17 +40,16 @@ export const SearchBar: React.FC = () => {
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Demo search suggestions
-  const suggestions: SearchResult[] = [
-    { id: '1', type: 'stop', name: 'Five Points Station', subtitle: 'Red & Blue Lines • High Demand', icon: <MapPin className="w-4 h-4 text-marta-red" /> },
-    { id: '2', type: 'stop', name: 'Peachtree Center', subtitle: 'Red & Gold Lines • Medium Demand', icon: <MapPin className="w-4 h-4 text-marta-orange" /> },
-    { id: '3', type: 'stop', name: 'Midtown Station', subtitle: 'Red Line • High Demand', icon: <MapPin className="w-4 h-4 text-marta-red" /> },
-    { id: '4', type: 'stop', name: 'North Avenue', subtitle: 'Red & Gold Lines • Low Demand', icon: <MapPin className="w-4 h-4 text-marta-green" /> },
-    { id: '5', type: 'stop', name: 'Buckhead Station', subtitle: 'Red Line • Medium Demand', icon: <MapPin className="w-4 h-4 text-marta-orange" /> },
-    { id: '6', type: 'route', name: 'Red Line', subtitle: 'North Springs to Airport', icon: <Route className="w-4 h-4 text-marta-blue" /> },
-    { id: '7', type: 'route', name: 'Blue Line', subtitle: 'Hamilton E Holmes to Indian Creek', icon: <Route className="w-4 h-4 text-marta-blue" /> },
-    { id: '8', type: 'route', name: 'Gold Line', subtitle: 'Doraville to Airport', icon: <Route className="w-4 h-4 text-marta-blue" /> },
-  ];
+  // Helper function to get route color
+  const getRouteColor = (routeId: string) => {
+    const colors: Record<string, string> = {
+      RED: 'text-red-500',
+      GOLD: 'text-yellow-500',
+      BLUE: 'text-blue-500',
+      GREEN: 'text-green-500'
+    };
+    return colors[routeId] || 'text-gray-500';
+  };
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -58,11 +66,45 @@ export const SearchBar: React.FC = () => {
     setSearchQuery(query);
     
     if (query.length > 0) {
-      const filtered = suggestions.filter(item =>
-        item.name.toLowerCase().includes(query.toLowerCase()) ||
-        item.subtitle?.toLowerCase().includes(query.toLowerCase())
-      );
-      setSearchResults(filtered);
+      const results: SearchResult[] = [];
+      
+      // Search stops
+      const matchingStops = searchStops(query).slice(0, 5);
+      matchingStops.forEach(stop => {
+        const routeNames = stop.routes.join(', ');
+        const features = [];
+        if (stop.parking) features.push('Parking');
+        if (stop.accessibility) features.push('Accessible');
+        
+        results.push({
+          id: stop.id,
+          type: 'stop',
+          name: stop.name,
+          subtitle: `${routeNames} Lines${features.length ? ' • ' + features.join(' • ') : ''}`,
+          icon: <Train className={`w-4 h-4 ${stop.routes.length > 2 ? 'text-purple-500' : getRouteColor(stop.routes[0])}`} />
+        });
+      });
+      
+      // Search routes
+      const matchingRoutes = martaRoutes.filter(route =>
+        route.name.toLowerCase().includes(query.toLowerCase()) ||
+        route.id.toLowerCase().includes(query.toLowerCase())
+      ).slice(0, 3);
+      
+      matchingRoutes.forEach(route => {
+        const firstStop = martaStops.find(s => s.id === route.stops[0]);
+        const lastStop = martaStops.find(s => s.id === route.stops[route.stops.length - 1]);
+        
+        results.push({
+          id: route.id,
+          type: 'route',
+          name: route.name,
+          subtitle: `${firstStop?.name} to ${lastStop?.name} • ${route.stops.length} stops`,
+          icon: <Route className={`w-4 h-4 ${getRouteColor(route.id)}`} />
+        });
+      });
+      
+      setSearchResults(results);
     } else {
       setSearchResults([]);
     }
@@ -72,19 +114,33 @@ export const SearchBar: React.FC = () => {
     setSearchQuery(result.name);
     setIsOpen(false);
     
-    // Demo: Simulate selecting a stop or route
+    // Add to recent searches
+    const updatedRecent = [result, ...recentSearches.filter(r => r.id !== result.id)].slice(0, 5);
+    setRecentSearches(updatedRecent);
+    localStorage.setItem('martaRecentSearches', JSON.stringify(updatedRecent));
+    
     if (result.type === 'stop') {
-      const demoStop = {
-        id: result.id,
-        name: result.name,
-        lat: 33.7537,
-        lng: -84.3918,
-        demandLevel: 'high' as const,
-        currentPassengers: 45,
-        predictedDemand: 52,
-        routes: ['Red', 'Blue']
-      };
-      setSelectedStop(demoStop);
+      // Find the actual stop data
+      const stop = martaStops.find(s => s.id === result.id);
+      if (stop) {
+        const selectedStopData = {
+          id: stop.id,
+          name: stop.name,
+          lat: stop.lat,
+          lng: stop.lng,
+          demandLevel: 'medium' as const, // This would come from real-time data
+          currentPassengers: Math.floor(Math.random() * 60) + 10,
+          predictedDemand: Math.floor(Math.random() * 70) + 15,
+          routes: stop.routes
+        };
+        setSelectedStop(selectedStopData);
+      }
+    } else if (result.type === 'route') {
+      // Handle route selection
+      const route = martaRoutes.find(r => r.id === result.id);
+      if (route) {
+        setSelectedRoute(route);
+      }
     }
   };
 
