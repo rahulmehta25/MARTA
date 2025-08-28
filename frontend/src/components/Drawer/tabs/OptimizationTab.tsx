@@ -3,6 +3,8 @@ import { motion } from 'framer-motion';
 import { Settings, Play, BarChart3, Route, Clock, Users, Target } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { DynamicStopManager } from '@/components/DynamicStops/DynamicStopManager';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const optimizationResults = [
   { route: 'Red Line', before: 8.5, after: 6.2, improvement: 27 },
@@ -25,29 +27,36 @@ export const OptimizationTab: React.FC = () => {
   };
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold flex items-center gap-2">
-          <Target className="w-5 h-5 text-marta-blue" />
-          Route Optimization
-        </h2>
-        <Button
-          onClick={handleOptimize}
-          disabled={isOptimizing}
-          className="bg-marta-blue hover:bg-marta-blue/90"
-        >
-          {isOptimizing ? (
-            <motion.div
-              animate={{ rotate: 360 }}
-              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-              className="w-4 h-4 border-2 border-white border-t-transparent rounded-full"
-            />
-          ) : (
-            <Play className="w-4 h-4" />
-          )}
-          {isOptimizing ? 'Optimizing...' : 'Run Optimization'}
-        </Button>
-      </div>
+    <div className="p-6">
+      <Tabs defaultValue="optimization" className="w-full">
+        <TabsList className="grid w-full grid-cols-2 mb-6">
+          <TabsTrigger value="optimization">Route Optimization</TabsTrigger>
+          <TabsTrigger value="dynamic">Dynamic Stops</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="optimization" className="space-y-6 mt-0">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-semibold flex items-center gap-2">
+              <Target className="w-5 h-5 text-marta-blue" />
+              Route Optimization
+            </h2>
+            <Button
+              onClick={handleOptimize}
+              disabled={isOptimizing}
+              className="bg-marta-blue hover:bg-marta-blue/90"
+            >
+              {isOptimizing ? (
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                  className="w-4 h-4 border-2 border-white border-t-transparent rounded-full"
+                />
+              ) : (
+                <Play className="w-4 h-4" />
+              )}
+              {isOptimizing ? 'Optimizing...' : 'Run Optimization'}
+            </Button>
+          </div>
 
       {/* Optimization Parameters */}
       <motion.div
@@ -235,6 +244,12 @@ export const OptimizationTab: React.FC = () => {
           </div>
         </motion.div>
       )}
+        </TabsContent>
+        
+        <TabsContent value="dynamic" className="mt-0">
+          <DynamicStopManager />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
