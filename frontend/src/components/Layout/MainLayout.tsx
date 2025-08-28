@@ -146,6 +146,12 @@ export const MainLayout: React.FC = () => {
                   variant="outline" 
                   size="sm"
                   className="hover:bg-secondary/80 transition-all duration-300"
+                  onClick={() => {
+                    // Toggle drawer with settings tab
+                    const store = useAppStore.getState();
+                    store.setActiveTab('optimization');
+                    store.toggleDrawer();
+                  }}
                 >
                   <Settings className="w-4 h-4" />
                 </Button>

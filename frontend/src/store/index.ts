@@ -60,6 +60,7 @@ export interface AppActions {
   
   // UI actions
   setDrawerOpen: (open: boolean) => void;
+  toggleDrawer: () => void;
   setDrawerHeight: (height: number) => void;
   setActiveTab: (tab: AppState['activeTab']) => void;
   setSearchQuery: (query: string) => void;
@@ -108,6 +109,7 @@ export const useAppStore = create<AppState & AppActions>((set, get) => ({
   toggleDemandHeatmap: () => set((state) => ({ showDemandHeatmap: !state.showDemandHeatmap })),
   
   setDrawerOpen: (open) => set({ drawerOpen: open }),
+  toggleDrawer: () => set((state) => ({ drawerOpen: !state.drawerOpen })),
   setDrawerHeight: (height) => set({ drawerHeight: Math.max(200, Math.min(height, 600)) }),
   setActiveTab: (tab) => set({ activeTab: tab }),
   setSearchQuery: (query) => set({ searchQuery: query }),
