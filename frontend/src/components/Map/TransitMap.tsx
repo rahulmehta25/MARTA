@@ -86,10 +86,14 @@ export const TransitMap: React.FC<TransitMapProps> = ({ className }) => {
 
   // Initialize map with error handling
   useEffect(() => {
-    if (!mapContainer.current) return;
+    if (!mapContainer.current) {
+      console.error('Map container not found');
+      return;
+    }
 
     // Set the Mapbox access token
     mapboxgl.accessToken = MAPBOX_TOKEN;
+    console.log('Initializing map with token:', MAPBOX_TOKEN.substring(0, 20) + '...');
     
     // Check if token is valid
     if (!MAPBOX_TOKEN || MAPBOX_TOKEN === 'your_mapbox_token_here') {
@@ -98,6 +102,7 @@ export const TransitMap: React.FC<TransitMapProps> = ({ className }) => {
 
     try {
       // Initialize map
+      console.log('Creating map instance...');
       map.current = new mapboxgl.Map({
         container: mapContainer.current,
         style: getMapStyle(),
@@ -106,6 +111,7 @@ export const TransitMap: React.FC<TransitMapProps> = ({ className }) => {
         pitch: 0,
         bearing: 0,
       });
+      console.log('Map instance created');
 
       // Add navigation controls
       map.current.addControl(
@@ -305,10 +311,11 @@ export const TransitMap: React.FC<TransitMapProps> = ({ className }) => {
   };
 
   return (
-    <div className={`relative ${className}`}>
+    <div className={`relative w-full h-full ${className}`}>
       <div 
         ref={mapContainer} 
-        className="absolute inset-0 rounded-xl overflow-hidden shadow-lg"
+        className="w-full h-full rounded-xl overflow-hidden shadow-lg"
+        style={{ minHeight: '400px' }}
       />
       
       {/* Map overlays */}
