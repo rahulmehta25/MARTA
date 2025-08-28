@@ -230,4 +230,4 @@ For contribution guidelines and development standards, please contact the MARTA 
 
 ---
 
-**Built with ❤️ for MARTA Transit System**
+**Built for MARTA Transit System**

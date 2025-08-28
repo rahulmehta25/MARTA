@@ -1,16 +1,16 @@
 # MARTA Project Activity Log
 
 ## Date: 2025-07-28
-## Activity: UI Integration from Lovable Project
+## Activity: Modern UI Integration
 
 ### Summary
-Integrated a modern React-based UI from the Lovable project (https://github.com/rahulmehta25/marta-transit-flow) into the existing MARTA demand forecasting and route optimization platform.
+Integrated a modern React-based UI from the transit-flow project (https://github.com/rahulmehta25/marta-transit-flow) into the existing MARTA demand forecasting and route optimization platform.
 
 ### What Was Done
 
 #### 1. **Frontend Replacement**
 - Removed the old basic React frontend
-- Cloned and integrated the sophisticated UI from the Lovable project
+- Cloned and integrated the sophisticated UI from the transit-flow project
 - Updated package.json with modern dependencies including:
   - React 18 with TypeScript
   - Vite for fast development

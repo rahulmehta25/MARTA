@@ -383,4 +383,4 @@ For questions and support:
 
 ---
 
-**Built with ❤️ for better public transportation** 
+**Built for better public transportation** 

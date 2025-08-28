@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <!-- MARTA Transit Icon - Train/Metro Symbol -->
+  <!-- Background Circle -->
+  <circle cx="64" cy="64" r="60" fill="#003E7E" stroke="#F5A623" stroke-width="4"/>
+  
+  <!-- Metro Train Symbol -->
+  <g transform="translate(64, 64)">
+    <!-- Train Body -->
+    <rect x="-30" y="-20" width="60" height="30" fill="#FFFFFF" rx="4"/>
+    
+    <!-- Windows -->
+    <rect x="-25" y="-15" width="10" height="10" fill="#003E7E"/>
+    <rect x="-10" y="-15" width="10" height="10" fill="#003E7E"/>
+    <rect x="5" y="-15" width="10" height="10" fill="#003E7E"/>
+    <rect x="15" y="-15" width="10" height="10" fill="#003E7E"/>
+    
+    <!-- Rails -->
+    <rect x="-35" y="15" width="70" height="3" fill="#F5A623"/>
+    <rect x="-35" y="20" width="70" height="3" fill="#F5A623"/>
+    
+    <!-- Letter M for MARTA -->
+    <text x="0" y="5" font-family="Arial, sans-serif" font-size="16" font-weight="bold" 
+          fill="#003E7E" text-anchor="middle">M</text>
+  </g>
+</svg>

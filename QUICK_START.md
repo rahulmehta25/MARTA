@@ -1,6 +1,6 @@
 # 🚇 MARTA Platform - Quick Start Guide
 
-This guide will help you get the MARTA platform up and running quickly with the new Lovable UI integration.
+This guide will help you get the MARTA platform up and running quickly with the modern UI integration.
 
 ## 🎯 What You'll Get
 
