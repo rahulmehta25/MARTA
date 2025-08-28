@@ -60,13 +60,13 @@ export const MainLayout: React.FC = () => {
             <div className="hidden md:flex items-center gap-4 ml-8">
               <div className="flex items-center gap-2 px-3 py-1.5 bg-marta-green/10 border border-marta-green/20 rounded-lg">
                 <div className="w-2 h-2 bg-marta-green rounded-full animate-pulse"></div>
-                <span className="text-sm font-medium text-marta-green">847 Active</span>
+                <span className="text-sm font-medium text-marta-green">System Active</span>
               </div>
               <div className="flex items-center gap-2 px-3 py-1.5 bg-marta-orange/10 border border-marta-orange/20 rounded-lg">
-                <span className="text-sm font-medium text-marta-orange">3 High Demand</span>
+                <span className="text-sm font-medium text-marta-orange">Real-time Data</span>
               </div>
               <div className="flex items-center gap-2 px-3 py-1.5 bg-marta-blue/10 border border-marta-blue/20 rounded-lg">
-                <span className="text-sm font-medium text-marta-blue">94% Efficiency</span>
+                <span className="text-sm font-medium text-marta-blue">AI Optimized</span>
               </div>
             </div>
           </div>
@@ -188,3 +188,5 @@ export const MainLayout: React.FC = () => {
     </div>
   );
 };
+
+export default MainLayout;

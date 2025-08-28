@@ -1,47 +1,128 @@
+// Wrapper to preserve existing import path
+export { TransitMap } from "../Map 2/TransitMap";
+
 import React, { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { useAppStore } from '@/store';
 import { martaStops, martaRoutes } from '@/data/martaData';
+import { useWebSocket } from '@/hooks/useWebSocket';
+import { useToast } from '@/components/ui/use-toast';
 
-// Get Mapbox token from environment variable or use public token
+// Get Mapbox token from environment variable
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN || 'pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw';
 
 interface TransitMapProps {
   className?: string;
 }
 
+interface Vehicle {
+  id: string;
+  lat: number;
+  lon: number;
+  route: string;
+  bearing?: number;
+  speed?: number;
+}
+
 export const TransitMap: React.FC<TransitMapProps> = ({ className }) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const markersRef = useRef<mapboxgl.Marker[]>([]);
+  const vehicleMarkersRef = useRef<Map<string, mapboxgl.Marker>>(new Map());
+  const [dynamicStops, setDynamicStops] = useState<any[]>([]);
+  
+  const { toast } = useToast();
   
   const {
     mapStyle,
     selectedStop,
     selectedRoute,
     showDemandHeatmap,
-    stops,
-    routes,
     setSelectedStop,
     setSelectedRoute,
   } = useAppStore();
 
-  // Get demand level based on number of routes (stations with more routes typically have higher demand)
-  const getDemandLevel = (routeCount: number): 'high' | 'medium' | 'low' => {
-    if (routeCount >= 3) return 'high';
-    if (routeCount === 2) return 'medium';
-    return 'low';
-  };
+  // WebSocket connection for live vehicles
+  const wsUrl = import.meta.env.VITE_API_BASE_URL?.replace('http', 'ws') || 'ws://localhost:8001';
+  const { lastMessage, isConnected } = useWebSocket(`${wsUrl}/ws/vehicles`);
 
-  // Generate random passenger counts for demo
-  const getPassengerCount = (demandLevel: string) => {
-    switch(demandLevel) {
-      case 'high': return Math.floor(Math.random() * 30) + 40;
-      case 'medium': return Math.floor(Math.random() * 25) + 20;
-      default: return Math.floor(Math.random() * 20) + 5;
-    }
-  };
+  // Fetch dynamic stops
+  useEffect(() => {
+    const fetchDynamicStops = async () => {
+      try {
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001'}/dynamic-stops`);
+        if (response.ok) {
+          const data = await response.json();
+          setDynamicStops(data.stops || []);
+        }
+      } catch (error) {
+        console.error('Failed to fetch dynamic stops:', error);
+      }
+    };
+
+    fetchDynamicStops();
+    const interval = setInterval(fetchDynamicStops, 30000); // Refresh every 30 seconds
+    return () => clearInterval(interval);
+  }, []);
+
+  // Update vehicle positions from WebSocket
+  useEffect(() => {
+    if (!lastMessage || !map.current) return;
+
+    const { vehicles } = lastMessage;
+    if (!vehicles || !Array.isArray(vehicles)) return;
+
+    vehicles.forEach((vehicle: Vehicle) => {
+      let marker = vehicleMarkersRef.current.get(vehicle.id);
+      
+      if (!marker) {
+        // Create new vehicle marker
+        const el = document.createElement('div');
+        el.className = 'vehicle-marker';
+        el.innerHTML = `
+          <div style="
+            width: 20px;
+            height: 20px;
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            border: 2px solid white;
+            border-radius: 50%;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: pulse 2s infinite;
+          ">
+            <div style="
+              width: 6px;
+              height: 6px;
+              background: white;
+              border-radius: 50%;
+            "></div>
+          </div>
+        `;
+        
+        marker = new mapboxgl.Marker(el)
+          .setLngLat([vehicle.lon, vehicle.lat])
+          .addTo(map.current!);
+          
+        const popup = new mapboxgl.Popup({ offset: 25 })
+          .setHTML(`
+            <div class="p-2">
+              <strong>Vehicle ${vehicle.id}</strong><br/>
+              Route: ${vehicle.route}<br/>
+              ${vehicle.speed ? `Speed: ${vehicle.speed} mph` : ''}
+            </div>
+          `);
+        
+        marker.setPopup(popup);
+        vehicleMarkersRef.current.set(vehicle.id, marker);
+      } else {
+        // Update existing marker position
+        marker.setLngLat([vehicle.lon, vehicle.lat]);
+      }
+    });
+  }, [lastMessage]);
 
   const getMapStyle = () => {
     switch (mapStyle) {
@@ -51,6 +132,20 @@ export const TransitMap: React.FC<TransitMapProps> = ({ className }) => {
         return 'mapbox://styles/mapbox/satellite-v9';
       default:
         return 'mapbox://styles/mapbox/light-v10';
+    }
+  };
+
+  const getDemandLevel = (routeCount: number): 'high' | 'medium' | 'low' => {
+    if (routeCount >= 3) return 'high';
+    if (routeCount === 2) return 'medium';
+    return 'low';
+  };
+
+  const getPassengerCount = (demandLevel: string) => {
+    switch(demandLevel) {
+      case 'high': return Math.floor(Math.random() * 30) + 40;
+      case 'medium': return Math.floor(Math.random() * 25) + 20;
+      default: return Math.floor(Math.random() * 20) + 5;
     }
   };
 
@@ -68,28 +163,28 @@ export const TransitMap: React.FC<TransitMapProps> = ({ className }) => {
     return route ? route.color : '#999999';
   };
 
-  const createMarkerElement = (stop: any) => {
+  const createMarkerElement = (stop: any, isDynamic = false) => {
     const el = document.createElement('div');
-    const isPulse = stop.demandLevel === 'high';
+    const isPulse = stop.demandLevel === 'high' || isDynamic;
     
-    // Determine marker color based on routes
     let markerColor = '#999999';
-    if (stop.routes.length === 1) {
+    if (isDynamic) {
+      markerColor = '#E91E63'; // Pink for dynamic stops
+    } else if (stop.routes?.length === 1) {
       markerColor = getRouteColor(stop.routes[0]);
-    } else if (stop.routes.length > 1) {
-      // Multi-line stations get a purple color
-      markerColor = '#9C27B0';
+    } else if (stop.routes?.length > 1) {
+      markerColor = '#9C27B0'; // Purple for multi-line stations
     }
     
     el.innerHTML = `
       <div class="relative">
-        ${isPulse ? `<div class="absolute inset-0 w-8 h-8 bg-red-500 rounded-full opacity-75 animate-ping"></div>` : ''}
+        ${isPulse ? `<div class="absolute inset-0 w-8 h-8 bg-pink-500 rounded-full opacity-75 animate-ping"></div>` : ''}
         <div style="
           width: 24px;
           height: 24px;
           background: linear-gradient(135deg, ${markerColor}, ${markerColor}dd);
           border: 3px solid white;
-          border-radius: 50%;
+          border-radius: ${isDynamic ? '4px' : '50%'};
           box-shadow: 0 4px 12px rgba(0,0,0,0.25);
           cursor: pointer;
           display: flex;
@@ -105,27 +200,20 @@ export const TransitMap: React.FC<TransitMapProps> = ({ className }) => {
         onmouseover="this.style.transform='scale(1.2)'; this.style.boxShadow='0 6px 20px rgba(0,0,0,0.4)'"
         onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.25)'"
         >
-          ${stop.currentPassengers}
+          ${isDynamic ? '⚡' : stop.currentPassengers || ''}
         </div>
       </div>
     `;
     return el;
   };
 
-  // Initialize map with error handling
+  // Initialize map
   useEffect(() => {
-    if (!mapContainer.current) {
-      console.error('Map container not found');
-      return;
-    }
+    if (!mapContainer.current) return;
 
-    // Set the Mapbox access token
     mapboxgl.accessToken = MAPBOX_TOKEN;
-    console.log('Initializing map with token:', MAPBOX_TOKEN.substring(0, 20) + '...');
     
     try {
-      // Initialize map
-      console.log('Creating map instance...');
       map.current = new mapboxgl.Map({
         container: mapContainer.current,
         style: getMapStyle(),
@@ -134,7 +222,6 @@ export const TransitMap: React.FC<TransitMapProps> = ({ className }) => {
         pitch: 0,
         bearing: 0,
       });
-      console.log('Map instance created');
 
       // Add navigation controls
       map.current.addControl(
@@ -163,7 +250,11 @@ export const TransitMap: React.FC<TransitMapProps> = ({ className }) => {
 
         // Add all MARTA rail routes as colored lines
         martaRoutes.forEach((route) => {
-          // Add source for each route
+          if (map.current!.getSource(`route-${route.id}`)) {
+            map.current!.removeLayer(`route-${route.id}`);
+            map.current!.removeSource(`route-${route.id}`);
+          }
+
           map.current!.addSource(`route-${route.id}`, {
             type: 'geojson',
             data: {
@@ -179,7 +270,6 @@ export const TransitMap: React.FC<TransitMapProps> = ({ className }) => {
             }
           });
 
-          // Add layer for each route
           map.current!.addLayer({
             id: `route-${route.id}`,
             type: 'line',
@@ -190,18 +280,8 @@ export const TransitMap: React.FC<TransitMapProps> = ({ className }) => {
             },
             paint: {
               'line-color': route.color,
-              'line-width': [
-                'case',
-                ['boolean', ['feature-state', 'selected'], false],
-                6,
-                4
-              ],
-              'line-opacity': [
-                'case',
-                ['boolean', ['feature-state', 'selected'], false],
-                1,
-                0.7
-              ]
+              'line-width': 4,
+              'line-opacity': 0.7
             }
           });
 
@@ -219,7 +299,7 @@ export const TransitMap: React.FC<TransitMapProps> = ({ className }) => {
           });
         });
 
-        // Add all MARTA transit stops with enhanced markers
+        // Add MARTA transit stops
         martaStops.forEach((stop) => {
           const demandLevel = getDemandLevel(stop.routes.length);
           const currentPassengers = getPassengerCount(demandLevel);
@@ -236,7 +316,6 @@ export const TransitMap: React.FC<TransitMapProps> = ({ className }) => {
           
           el.addEventListener('click', () => {
             setSelectedStop(stopData);
-            // Smooth fly to selected stop
             map.current?.flyTo({
               center: [stop.lng, stop.lat],
               zoom: 14,
@@ -250,7 +329,7 @@ export const TransitMap: React.FC<TransitMapProps> = ({ className }) => {
 
           markersRef.current.push(marker);
 
-          // Enhanced popup with better styling and route colors
+          // Enhanced popup
           const routeColors = stop.routes.map(r => {
             const route = martaRoutes.find(rt => rt.id === r);
             return route ? `<span style="color: ${route.color}; font-weight: bold;">${route.name}</span>` : r;
@@ -280,15 +359,7 @@ export const TransitMap: React.FC<TransitMapProps> = ({ className }) => {
                   <span class="text-gray-600">Current:</span>
                   <span class="font-semibold">${currentPassengers} passengers</span>
                 </div>
-                <div class="flex justify-between">
-                  <span class="text-gray-600">Predicted:</span>
-                  <span class="font-semibold">${predictedDemand} passengers</span>
-                </div>
-                <div class="flex justify-between">
-                  <span class="text-gray-600">Demand:</span>
-                  <span class="font-semibold capitalize" style="color: ${getDemandColor(demandLevel)}">${demandLevel}</span>
-                </div>
-                ${stop.parking ? '<div class="flex justify-between"><span class="text-gray-600">Features:</span><span class="font-semibold">🅿️ Parking Available</span></div>' : ''}
+                ${stop.parking ? '<div class="flex justify-between"><span class="text-gray-600">Features:</span><span class="font-semibold">🅿️ Parking</span></div>' : ''}
                 ${stop.accessibility ? '<div class="flex justify-between"><span class="text-gray-600"></span><span class="font-semibold">♿ Accessible</span></div>' : ''}
               </div>
             </div>
@@ -297,92 +368,54 @@ export const TransitMap: React.FC<TransitMapProps> = ({ className }) => {
           marker.setPopup(popup);
         });
 
-        // Enhanced demand heatmap
-        if (showDemandHeatmap) {
-          map.current!.addSource('demand-heatmap', {
-            type: 'geojson',
-            data: {
-              type: 'FeatureCollection',
-              features: martaStops.map(stop => {
-                const demandLevel = getDemandLevel(stop.routes.length);
-                const weight = demandLevel === 'high' ? 1 : demandLevel === 'medium' ? 0.6 : 0.3;
-                return {
-                  type: 'Feature',
-                  properties: {
-                    demand: getPassengerCount(demandLevel),
-                    weight: weight
-                  },
-                  geometry: {
-                    type: 'Point',
-                    coordinates: [stop.lng, stop.lat]
-                  }
-                };
-              })
-            }
-          });
+        // Add dynamic stops
+        dynamicStops.forEach((stop) => {
+          const el = createMarkerElement(stop, true);
+          
+          const marker = new mapboxgl.Marker(el)
+            .setLngLat([stop.lon, stop.lat])
+            .addTo(map.current!);
 
-          map.current!.addLayer({
-            id: 'demand-heatmap',
-            type: 'heatmap',
-            source: 'demand-heatmap',
-            maxzoom: 15,
-            paint: {
-              'heatmap-weight': ['get', 'weight'],
-              'heatmap-intensity': [
-                'interpolate',
-                ['linear'],
-                ['zoom'],
-                0, 1,
-                15, 4
-              ],
-              'heatmap-color': [
-                'interpolate',
-                ['linear'],
-                ['heatmap-density'],
-                0, 'rgba(0, 200, 83, 0)',
-                0.1, 'rgba(0, 200, 83, 0.1)',
-                0.3, 'rgba(255, 193, 7, 0.3)',
-                0.5, 'rgba(255, 152, 0, 0.5)',
-                0.7, 'rgba(255, 87, 34, 0.7)',
-                1, 'rgba(244, 67, 54, 0.9)'
-              ],
-              'heatmap-radius': [
-                'interpolate',
-                ['linear'],
-                ['zoom'],
-                0, 30,
-                15, 80
-              ],
-              'heatmap-opacity': 0.6
-            }
-          });
-        }
-      });
+          const popup = new mapboxgl.Popup({
+            offset: 30,
+            closeButton: true,
+            closeOnClick: false,
+          }).setHTML(`
+            <div class="p-4 min-w-[200px]">
+              <h3 class="font-bold text-base mb-2">⚡ Dynamic Stop</h3>
+              <div class="space-y-1 text-sm">
+                <div>Demand Threshold: ${stop.demand_threshold}</div>
+                <div>Duration: ${stop.duration_minutes} min</div>
+                <div>Routes: ${(stop.routes || []).join(', ') || 'All'}</div>
+                <div class="text-xs text-gray-500 mt-2">
+                  Expires: ${stop.expires_at ? new Date(stop.expires_at).toLocaleTimeString() : 'N/A'}
+                </div>
+              </div>
+            </div>
+          `);
 
-      // Handle selected route highlighting
-      if (selectedRoute && map.current.isStyleLoaded()) {
-        martaRoutes.forEach((route) => {
-          if (map.current!.getLayer(`route-${route.id}`)) {
-            map.current!.setPaintProperty(`route-${route.id}`, 'line-opacity', 
-              route.id === selectedRoute.id ? 1 : 0.3
-            );
-            map.current!.setPaintProperty(`route-${route.id}`, 'line-width', 
-              route.id === selectedRoute.id ? 6 : 3
-            );
-          }
+          marker.setPopup(popup);
+          markersRef.current.push(marker);
         });
-      }
+      });
 
     } catch (error) {
       console.error('Error initializing map:', error);
+      toast({
+        title: "Map Error",
+        description: "Failed to initialize map. Please check your connection.",
+        variant: "destructive",
+      });
     }
 
     // Cleanup
     return () => {
+      vehicleMarkersRef.current.forEach(marker => marker.remove());
+      vehicleMarkersRef.current.clear();
       markersRef.current.forEach(marker => marker.remove());
       map.current?.remove();
     };
-  }, [mapStyle, showDemandHeatmap, selectedRoute]);
+  }, [mapStyle, showDemandHeatmap, selectedRoute, dynamicStops, toast]);
 
   return (
     <div className={`relative w-full h-full ${className}`}>
@@ -394,6 +427,14 @@ export const TransitMap: React.FC<TransitMapProps> = ({ className }) => {
       
       {/* Map overlays */}
       <div className="absolute top-4 left-4 z-10 space-y-3">
+        {/* Connection Status */}
+        <div className="bg-card/95 backdrop-blur-sm p-3 rounded-xl shadow-lg border border-border/50">
+          <div className="text-xs font-semibold mb-2 flex items-center gap-2">
+            <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'} animate-pulse`}></div>
+            {isConnected ? 'Live Updates' : 'Reconnecting...'}
+          </div>
+        </div>
+
         {/* Real-time Status */}
         <div className="bg-card/95 backdrop-blur-sm p-4 rounded-xl shadow-lg border border-border/50">
           <div className="text-sm font-semibold mb-2 flex items-center gap-2">
@@ -402,11 +443,7 @@ export const TransitMap: React.FC<TransitMapProps> = ({ className }) => {
           </div>
           <div className="space-y-1 text-xs">
             <div className="flex justify-between">
-              <span className="text-muted-foreground">System:</span>
-              <span className="text-marta-green font-medium">Operational</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Active Stations:</span>
+              <span className="text-muted-foreground">Stations:</span>
               <span className="font-medium">{martaStops.length}</span>
             </div>
             <div className="flex justify-between">
@@ -414,10 +451,12 @@ export const TransitMap: React.FC<TransitMapProps> = ({ className }) => {
               <span className="font-medium">{martaRoutes.length}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Transfer Stations:</span>
-              <span className="text-purple-500 font-medium">
-                {martaStops.filter(s => s.routes.length > 1).length}
-              </span>
+              <span className="text-muted-foreground">Dynamic Stops:</span>
+              <span className="font-medium text-pink-500">{dynamicStops.length}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Live Vehicles:</span>
+              <span className="font-medium text-green-500">{vehicleMarkersRef.current.size}</span>
             </div>
           </div>
         </div>
@@ -443,27 +482,22 @@ export const TransitMap: React.FC<TransitMapProps> = ({ className }) => {
             ))}
           </div>
         </div>
-
-        {/* Demand Levels Legend */}
-        <div className="bg-card/95 backdrop-blur-sm p-4 rounded-xl shadow-lg border border-border/50">
-          <div className="text-sm font-semibold mb-3">Demand Levels</div>
-          <div className="space-y-2">
-            {[
-              { level: 'high', color: '#FF1744', label: 'High Demand' },
-              { level: 'medium', color: '#FF9800', label: 'Medium Demand' },
-              { level: 'low', color: '#00C853', label: 'Low Demand' }
-            ].map(item => (
-              <div key={item.level} className="flex items-center gap-2 text-xs">
-                <div 
-                  className="w-3 h-3 rounded-full shadow-sm"
-                  style={{ backgroundColor: item.color }}
-                />
-                <span>{item.label}</span>
-              </div>
-            ))}
-          </div>
-        </div>
       </div>
+
+      {/* Add CSS for pulse animation */}
+      <style>{`
+        @keyframes pulse {
+          0% {
+            box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7);
+          }
+          70% {
+            box-shadow: 0 0 0 10px rgba(76, 175, 80, 0);
+          }
+          100% {
+            box-shadow: 0 0 0 0 rgba(76, 175, 80, 0);
+          }
+        }
+      `}</style>
     </div>
   );
 };
