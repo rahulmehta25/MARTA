@@ -1,5 +1,3 @@
-// Wrapper to preserve existing import path
-export { TransitMap } from "../Map 2/TransitMap";
 
 import React, { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
