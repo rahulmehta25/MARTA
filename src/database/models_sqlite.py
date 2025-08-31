@@ -222,3 +222,35 @@ class VehiclePosition(Base):
             "timestamp": self.timestamp.isoformat() if self.timestamp else None,
             "occupancy_status": self.occupancy_status
         }
+
+
+class Calendar(Base):
+    """GTFS Calendar for service schedules"""
+    __tablename__ = 'calendar'
+    
+    id = Column(Integer, primary_key=True)
+    service_id = Column(String(50), unique=True, nullable=False)
+    monday = Column(Boolean, default=False)
+    tuesday = Column(Boolean, default=False)
+    wednesday = Column(Boolean, default=False)
+    thursday = Column(Boolean, default=False)
+    friday = Column(Boolean, default=False)
+    saturday = Column(Boolean, default=False)
+    sunday = Column(Boolean, default=False)
+    start_date = Column(String(8), nullable=False)  # YYYYMMDD format
+    end_date = Column(String(8), nullable=False)  # YYYYMMDD format
+    
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "service_id": self.service_id,
+            "monday": self.monday,
+            "tuesday": self.tuesday,
+            "wednesday": self.wednesday,
+            "thursday": self.thursday,
+            "friday": self.friday,
+            "saturday": self.saturday,
+            "sunday": self.sunday,
+            "start_date": self.start_date,
+            "end_date": self.end_date
+        }
