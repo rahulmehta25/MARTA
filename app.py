@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 
 # Configuration
 PORT = int(os.environ.get('PORT', 8000))
-MARTA_API_KEY = os.environ.get('MARTA_API_KEY', 'ff98ada7-0436-42c5-b9bf-1071245ad1a0')
+MARTA_API_KEY = os.environ.get('MARTA_API_KEY', '')
 MARTA_API_URL = "https://developerservices.itsmarta.com:18096/itsmarta/railrealtimearrivals/developerservices/traindata"
 
 @app.route('/health')
