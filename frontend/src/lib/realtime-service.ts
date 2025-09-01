@@ -120,21 +120,21 @@ export class RealtimeService {
     line?: string;
     direction?: string;
   }): Promise<MartaRailArrival[]> {
-    return api.get<MartaRailArrival[]>('/marta/rail/arrivals', { params });
+    return api.get<MartaRailArrival[]>('/api/v1/marta/rail/arrivals', { params });
   }
 
   /**
    * Get MARTA rail stations with current arrivals
    */
   static async getMartaStations(): Promise<any[]> {
-    return api.get('/marta/rail/stations');
+    return api.get('/api/v1/marta/rail/stations');
   }
 
   /**
    * Get MARTA system status
    */
   static async getMartaSystemStatus(): Promise<any> {
-    return api.get('/marta/rail/status');
+    return api.get('/api/v1/marta/rail/status');
   }
 
   /**

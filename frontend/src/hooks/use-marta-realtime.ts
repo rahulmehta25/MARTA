@@ -52,7 +52,7 @@ export const useMartaRailArrivals = (station?: string, line?: string, direction?
       if (line) params.append('line', line);
       if (direction) params.append('direction', direction);
       
-      const url = buildApiUrl('/marta/rail/arrivals');
+      const url = buildApiUrl('/api/v1/marta/rail/arrivals');
       const queryString = params.toString();
       const response = await fetch(queryString ? `${url}?${queryString}` : url);
       
@@ -71,7 +71,7 @@ export const useMartaStations = () => {
   return useQuery<MartaStation[]>({
     queryKey: ['marta', 'rail', 'stations'],
     queryFn: async () => {
-      const response = await fetch(buildApiUrl('/marta/rail/stations'));
+      const response = await fetch(buildApiUrl('/api/v1/marta/rail/stations'));
       
       if (!response.ok) {
         throw new Error('Failed to fetch stations');
@@ -88,7 +88,7 @@ export const useMartaSystemStatus = () => {
   return useQuery<MartaSystemStatus>({
     queryKey: ['marta', 'rail', 'status'],
     queryFn: async () => {
-      const response = await fetch(buildApiUrl('/marta/rail/status'));
+      const response = await fetch(buildApiUrl('/api/v1/marta/rail/status'));
       
       if (!response.ok) {
         throw new Error('Failed to fetch system status');
