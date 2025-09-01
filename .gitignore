@@ -131,3 +131,4 @@ tmp/
 temp/
 *.tmp
 .vercel
+.env.supabase
