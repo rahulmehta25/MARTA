@@ -40,18 +40,23 @@ export const PerformanceDashboard: React.FC = () => {
   const [patterns, setPatterns] = useState<DelayPattern[]>([]);
   const [loading, setLoading] = useState(true);
   
-  const API_BASE = import.meta.env.VITE_API_URL || 'https://marta-rail-api.up.railway.app';
+  const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://vglychbweuowsovboxyf.supabase.co';
+  const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZnbHljaGJ3ZXVvd3NvdmJveHlmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY2OTA5OTMsImV4cCI6MjA3MjI2Njk5M30.W8P-ZLQRWouaWH8LWVA4frKNs5r-nX_j_x27oRIAerY';
 
   useEffect(() => {
     const fetchAnalytics = async () => {
       try {
         setLoading(true);
         
-        // Fetch all analytics data in parallel
-        const [healthRes, insightsRes, patternsRes] = await Promise.all([
-          fetch(`${API_BASE}/api/v1/analytics/performance`),
-          fetch(`${API_BASE}/api/v1/analytics/insights`),
-          fetch(`${API_BASE}/api/v1/analytics/delay-patterns`)
+        // Fetch all analytics data in parallel from Supabase Edge Functions
+        const headers = {
+          'apikey': SUPABASE_ANON_KEY,
+          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+        };
+        
+        const [healthRes, insightsRes] = await Promise.all([
+          fetch(`${SUPABASE_URL}/functions/v1/analytics-performance`, { headers }),
+          fetch(`${SUPABASE_URL}/functions/v1/analytics-insights`, { headers })
         ]);
         
         if (healthRes.ok) {
@@ -62,11 +67,6 @@ export const PerformanceDashboard: React.FC = () => {
         if (insightsRes.ok) {
           const insightsData = await insightsRes.json();
           setInsights(insightsData.insights || []);
-        }
-        
-        if (patternsRes.ok) {
-          const patternsData = await patternsRes.json();
-          setPatterns(patternsData.patterns || []);
         }
       } catch (error) {
         console.error('Failed to fetch analytics:', error);

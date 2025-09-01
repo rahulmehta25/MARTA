@@ -30,17 +30,24 @@ export const ArrivalBoard: React.FC<ArrivalBoardProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
 
-  // API endpoint - use production or local
-  const API_BASE = import.meta.env.VITE_API_URL || 'https://marta-rail-api.up.railway.app';
+  // Supabase Edge Functions endpoint
+  const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://vglychbweuowsovboxyf.supabase.co';
+  const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZnbHljaGJ3ZXVvd3NvdmJveHlmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY2OTA5OTMsImV4cCI6MjA3MjI2Njk5M30.W8P-ZLQRWouaWH8LWVA4frKNs5r-nX_j_x27oRIAerY';
 
   const fetchArrivals = async () => {
     try {
       setLoading(true);
       setError(null);
       
-      // Fetch real-time arrivals
+      // Fetch real-time arrivals from Supabase Edge Function
       const response = await fetch(
-        `${API_BASE}/api/v1/marta/rail/arrivals?station=${encodeURIComponent(stationId)}`
+        `${SUPABASE_URL}/functions/v1/marta-arrivals?station=${encodeURIComponent(stationId)}`,
+        {
+          headers: {
+            'apikey': SUPABASE_ANON_KEY,
+            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+          }
+        }
       );
       
       if (!response.ok) throw new Error('Failed to fetch arrivals');
