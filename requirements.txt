@@ -1,35 +1,5 @@
-# Core dependencies - Flask for Railway compatibility
+# Core Flask dependencies for Railway
 flask==3.0.0
 flask-cors==4.0.0
 httpx==0.25.2
 python-dotenv==1.0.0
-
-# FastAPI (for future migration)
-fastapi==0.104.1
-uvicorn[standard]==0.24.0
-pydantic==2.5.2
-pydantic-settings==2.1.0
-
-# Database
-sqlalchemy==2.0.23
-alembic==1.13.0
-
-# HTTP client for MARTA API
-httpx==0.25.2
-
-# CORS and middleware
-python-multipart==0.0.6
-
-# WebSocket support
-websockets==12.0
-
-# Date/time handling
-python-dateutil==2.8.2
-
-# Data processing (minimal)
-pandas==2.0.0
-numpy==1.24.0
-
-# GTFS data (for future use)
-gtfs-realtime-bindings==1.0.0
-protobuf==4.23.0
