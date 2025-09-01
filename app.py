@@ -20,7 +20,6 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Configuration
-PORT = int(os.environ.get('PORT', 8000))
 MARTA_API_KEY = os.environ.get('MARTA_API_KEY', '')
 MARTA_API_URL = "https://developerservices.itsmarta.com:18096/itsmarta/railrealtimearrivals/developerservices/traindata"
 
@@ -211,4 +210,6 @@ def get_system_status():
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=PORT, debug=False)
+    # Railway provides PORT as environment variable
+    port = int(os.environ.get('PORT', 8000))
+    app.run(host='0.0.0.0', port=port, debug=False)
