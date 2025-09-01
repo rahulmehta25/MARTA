@@ -13,7 +13,7 @@ import {
   AlertTriangle,
   ArrowRight,
   Train,
-  Walking,
+  Footprints,
   Zap
 } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -235,7 +235,7 @@ export const TripPlanner: React.FC = () => {
                   Fewest Transfers
                 </TabsTrigger>
                 <TabsTrigger value="2" className="flex items-center gap-1">
-                  <Walking className="h-3 w-3" />
+                  <Footprints className="h-3 w-3" />
                   Less Crowded
                 </TabsTrigger>
               </TabsList>
@@ -287,7 +287,7 @@ export const TripPlanner: React.FC = () => {
                         {step.type === 'walk' ? (
                           <>
                             <div className="mt-1">
-                              <Walking className="h-5 w-5 text-muted-foreground" />
+                              <Footprints className="h-5 w-5 text-muted-foreground" />
                             </div>
                             <div className="flex-1">
                               <div className="font-medium">Walk to {step.to}</div>
