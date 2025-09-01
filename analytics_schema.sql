@@ -109,10 +109,11 @@ CREATE TABLE IF NOT EXISTS arrival_predictions (
     
     -- Accuracy Tracking
     error_seconds INTEGER, -- Actual - Predicted (null until actual arrives)
-    was_accurate BOOLEAN, -- Within acceptable threshold
-    
-    INDEX idx_predictions_lookup (station_id, line, predicted_at DESC)
+    was_accurate BOOLEAN -- Within acceptable threshold
 );
+
+-- Create index for arrival_predictions
+CREATE INDEX idx_predictions_lookup ON arrival_predictions (station_id, line, predicted_at DESC);
 
 -- Demand Forecasts Table
 CREATE TABLE IF NOT EXISTS demand_forecasts (
@@ -162,10 +163,7 @@ CREATE TABLE IF NOT EXISTS user_analytics (
     -- Device Info
     platform TEXT, -- 'web', 'mobile', 'pwa'
     device_type TEXT,
-    browser TEXT,
-    
-    INDEX idx_user_analytics_user (user_id, timestamp DESC),
-    INDEX idx_user_analytics_session (session_id, timestamp DESC)
+    browser TEXT
 );
 
 -- System Health Metrics (Enhanced)
@@ -207,6 +205,8 @@ CREATE INDEX idx_delay_patterns_observed ON delay_patterns(last_observed DESC);
 CREATE INDEX idx_ml_models_active ON ml_models(is_active, model_type);
 CREATE INDEX idx_demand_forecasts_date ON demand_forecasts(forecast_date, station_id);
 CREATE INDEX idx_system_health_time ON system_health_metrics(metric_time DESC);
+CREATE INDEX idx_user_analytics_user ON user_analytics(user_id, timestamp DESC);
+CREATE INDEX idx_user_analytics_session ON user_analytics(session_id, timestamp DESC);
 
 -- Create views for common queries
 
