@@ -38,6 +38,7 @@ def index():
     return jsonify({
         "name": "MARTA Transit Analytics API",
         "version": "1.0.0",
+        "api_key_configured": bool(MARTA_API_KEY),
         "endpoints": {
             "health": "/health",
             "marta_rail_arrivals": "/api/v1/marta/rail/arrivals",
@@ -50,6 +51,10 @@ def index():
 def get_rail_arrivals():
     """Get real-time MARTA rail arrivals"""
     try:
+        # Check if API key is configured
+        if not MARTA_API_KEY:
+            logger.error("MARTA API key is not configured")
+            return jsonify({"error": "MARTA API key is not configured. Please set MARTA_API_KEY environment variable."}), 500
         # Get query parameters
         station = request.args.get('station')
         line = request.args.get('line')
@@ -105,6 +110,10 @@ def get_rail_arrivals():
 def get_stations():
     """Get list of all MARTA rail stations with current arrivals"""
     try:
+        # Check if API key is configured
+        if not MARTA_API_KEY:
+            logger.error("MARTA API key is not configured")
+            return jsonify({"error": "MARTA API key is not configured. Please set MARTA_API_KEY environment variable."}), 500
         # Fetch from MARTA API
         url = f"{MARTA_API_URL}?apiKey={MARTA_API_KEY}"
         
@@ -156,6 +165,10 @@ def get_stations():
 def get_system_status():
     """Get MARTA rail system status"""
     try:
+        # Check if API key is configured
+        if not MARTA_API_KEY:
+            logger.error("MARTA API key is not configured")
+            return jsonify({"error": "MARTA API key is not configured. Please set MARTA_API_KEY environment variable."}), 500
         # Fetch from MARTA API
         url = f"{MARTA_API_URL}?apiKey={MARTA_API_KEY}"
         
