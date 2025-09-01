@@ -36,5 +36,4 @@ enabled = true
 [storage.image_transformation]
 enabled = true
 
-[functions]
-enabled = true
+# Functions configuration is handled automatically

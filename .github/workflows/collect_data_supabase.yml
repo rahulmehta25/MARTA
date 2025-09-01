@@ -20,15 +20,15 @@ jobs:
     
     - name: Install dependencies
       run: |
-        pip install httpx
+        pip install httpx python-dotenv supabase
     
     - name: Collect and store data in Supabase
       env:
         MARTA_API_KEY: ${{ secrets.MARTA_API_KEY }}
         SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-        SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
       run: |
-        python collect_data_supabase.py
+        python collect_data_secure.py
     
     - name: Check collection status
       if: failure()
