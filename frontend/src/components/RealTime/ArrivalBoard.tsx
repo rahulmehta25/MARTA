@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Train, Clock, AlertCircle, TrendingUp } from 'lucide-react';
+import { Train, Clock, AlertCircle, TrendingUp, Wifi, WifiOff } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useRealtimeSubscription } from '@/hooks/useRealtimeSubscription';
 
 interface Arrival {
   station: string;
@@ -29,6 +30,33 @@ export const ArrivalBoard: React.FC<ArrivalBoardProps> = ({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
+  
+  // Real-time subscription
+  const handleRealtimeUpdate = useCallback((data: any) => {
+    if (Array.isArray(data)) {
+      // Initial data or bulk update
+      setArrivals(data.slice(0, limit));
+    } else if (data && data.station_id === stationId) {
+      // Single arrival update
+      setArrivals(prev => {
+        const updated = [...prev];
+        const index = updated.findIndex(a => a.train_id === data.train_id);
+        if (index >= 0) {
+          updated[index] = data;
+        } else {
+          updated.push(data);
+        }
+        return updated.sort((a, b) => a.waiting_seconds - b.waiting_seconds).slice(0, limit);
+      });
+    }
+    setLastUpdate(new Date());
+  }, [stationId, limit]);
+
+  const { isConnected, lastUpdate: realtimeLastUpdate } = useRealtimeSubscription({
+    channel: 'arrivals',
+    stationId,
+    onMessage: handleRealtimeUpdate
+  });
 
   // Supabase Edge Functions endpoint
   const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://vglychbweuowsovboxyf.supabase.co';
@@ -64,7 +92,13 @@ export const ArrivalBoard: React.FC<ArrivalBoardProps> = ({
         sortedArrivals.map(async (arrival: Arrival) => {
           try {
             const predResponse = await fetch(
-              `${API_BASE}/api/v1/analytics/predictions/${encodeURIComponent(arrival.station)}?line=${arrival.line}&direction=${arrival.direction}`
+              `${SUPABASE_URL}/functions/v1/predict-arrival?station=${encodeURIComponent(arrival.station)}&line=${arrival.line}&direction=${arrival.direction}`,
+              {
+                headers: {
+                  'apikey': SUPABASE_ANON_KEY,
+                  'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                }
+              }
             );
             if (predResponse.ok) {
               const prediction = await predResponse.json();
@@ -156,9 +190,24 @@ export const ArrivalBoard: React.FC<ArrivalBoardProps> = ({
             <Train className="h-5 w-5" />
             {stationId}
           </CardTitle>
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Clock className="h-4 w-4" />
-            {lastUpdate.toLocaleTimeString()}
+          <div className="flex items-center gap-3 text-sm text-muted-foreground">
+            <div className="flex items-center gap-1">
+              {isConnected ? (
+                <>
+                  <Wifi className="h-4 w-4 text-green-500" />
+                  <span className="text-green-500">Live</span>
+                </>
+              ) : (
+                <>
+                  <WifiOff className="h-4 w-4" />
+                  <span>Offline</span>
+                </>
+              )}
+            </div>
+            <div className="flex items-center gap-1">
+              <Clock className="h-4 w-4" />
+              {lastUpdate.toLocaleTimeString()}
+            </div>
           </div>
         </div>
       </CardHeader>
