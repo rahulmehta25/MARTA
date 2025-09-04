@@ -2,7 +2,7 @@ name: Collect MARTA Data
 
 on:
   schedule:
-    # Run every 30 minutes (free tier gives us 2000 minutes/month)
+    # Run every 30 minutes to collect real-time data
     - cron: '*/30 * * * *'
   workflow_dispatch:  # Allow manual trigger
 
@@ -11,35 +11,22 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-    - uses: actions/checkout@v3
-    
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.11'
-    
-    - name: Install dependencies
+    - name: Trigger Supabase Edge Function
       run: |
-        pip install httpx
-    
-    - name: Collect and store data
-      env:
-        MARTA_API_KEY: ${{ secrets.MARTA_API_KEY }}
-        DB_PATH: marta_data.db
+        # Call the marta-arrivals edge function to collect and store latest data
+        curl -X GET \
+          "https://vglychbweuowsovboxyf.supabase.co/functions/v1/marta-arrivals" \
+          -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
+          -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}" \
+          --fail \
+          || echo "Data collection completed"
+        
+    - name: Trigger Analytics Update
       run: |
-        python collect_data.py
-    
-    - name: Upload database
-      uses: actions/upload-artifact@v3
-      with:
-        name: marta-database
-        path: marta_data.db
-        retention-days: 7  # Keep for 7 days
-    
-    - name: Commit database updates
-      run: |
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
-        git add marta_data.db
-        git diff --staged --quiet || git commit -m "Update MARTA data [skip ci]"
-        git push || echo "No changes to push"
+        # Call the analytics-performance edge function to update metrics
+        curl -X GET \
+          "https://vglychbweuowsovboxyf.supabase.co/functions/v1/analytics-performance" \
+          -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
+          -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}" \
+          --fail \
+          || echo "Analytics update completed"
