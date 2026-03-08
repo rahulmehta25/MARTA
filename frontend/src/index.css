@@ -101,8 +101,8 @@ All colors MUST be HSL.
     --destructive: 0 100% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 0 0% 14%;
-    --input: 0 0% 14%;
+    --border: 0 0% 16%;
+    --input: 0 0% 16%;
     --ring: 207 100% 51%;
     
     /* Dark theme map */

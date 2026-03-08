@@ -1,0 +1,1241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MARTA Transit Analytics | Live Operations Digital Twin</title>
+  <meta name="description" content="Interactive MARTA transit operations dashboard with animated rail map, station heatmap, ridership forecasting, and time-of-day simulation.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #06131f;
+      --panel: #0b1e2f;
+      --panel-2: #0f273c;
+      --text: #ecf7ff;
+      --muted: #93a9bc;
+      --border: #1e3a52;
+      --good: #00d084;
+      --warn: #ffd166;
+      --bad: #ff5c6f;
+      --red: #e44848;
+      --gold: #f1bd2d;
+      --blue: #2f7cff;
+      --green: #00bb7b;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Space Grotesk", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(1200px 500px at 10% -10%, #1d4f6a55 0%, transparent 60%),
+        radial-gradient(900px 500px at 95% 0%, #6c4b1f40 0%, transparent 60%),
+        linear-gradient(165deg, #040b14 0%, #071928 55%, #04101c 100%);
+      overflow-x: hidden;
+    }
+
+    .shell {
+      max-width: 1500px;
+      margin: 0 auto;
+      padding: 18px;
+      display: grid;
+      gap: 16px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 14px 18px;
+      border-radius: 14px;
+      border: 1px solid #2a4b68;
+      background: linear-gradient(120deg, #0a2133 0%, #0d2a40 50%, #0e1f31 100%);
+      box-shadow: 0 20px 60px #00000040;
+    }
+
+    .title-wrap h1 {
+      margin: 0;
+      font-size: clamp(1.15rem, 2vw, 1.6rem);
+      line-height: 1.1;
+      letter-spacing: 0.02em;
+    }
+
+    .title-wrap p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
+    .status-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .chip {
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid #355879;
+      background: #0c2236;
+      color: #b9d3e9;
+      font-size: 0.78rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      font-family: "IBM Plex Mono", monospace;
+    }
+
+    .live {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #c9fff0;
+    }
+
+    .live-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--good);
+      box-shadow: 0 0 0 0 #00d08466;
+      animation: pulse 1.8s infinite;
+    }
+
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 #00d08466; }
+      75% { box-shadow: 0 0 0 12px #00d08400; }
+      100% { box-shadow: 0 0 0 0 #00d08400; }
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 2fr) minmax(320px, 1fr);
+      gap: 16px;
+      min-height: 720px;
+    }
+
+    .panel {
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: linear-gradient(180deg, #0a1f32 0%, #081a2a 100%);
+      box-shadow: inset 0 1px 0 #ffffff14, 0 24px 50px #00000030;
+    }
+
+    .map-panel {
+      padding: 16px;
+      display: grid;
+      grid-template-rows: auto auto minmax(400px, 1fr) auto;
+      gap: 14px;
+    }
+
+    .panel-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .panel-title h2 {
+      margin: 0;
+      font-size: 1.02rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+
+    .panel-title p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.86rem;
+    }
+
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .kpi {
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid #294765;
+      background: #102941;
+      min-height: 90px;
+    }
+
+    .kpi label {
+      display: block;
+      font-size: 0.7rem;
+      font-family: "IBM Plex Mono", monospace;
+      color: #8cabca;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 6px;
+    }
+
+    .kpi strong {
+      font-size: clamp(1rem, 2vw, 1.5rem);
+      line-height: 1.05;
+      letter-spacing: 0.02em;
+      display: block;
+    }
+
+    .kpi span {
+      color: var(--muted);
+      font-size: 0.8rem;
+    }
+
+    .map-wrap {
+      position: relative;
+      border: 1px solid #2b4a69;
+      border-radius: 14px;
+      background:
+        radial-gradient(circle at 20% 15%, #194f7522 0%, transparent 30%),
+        radial-gradient(circle at 80% 90%, #78541933 0%, transparent 35%),
+        linear-gradient(180deg, #081626 0%, #091c2e 100%);
+      min-height: 440px;
+      overflow: hidden;
+    }
+
+    #mapSvg {
+      width: 100%;
+      height: 100%;
+      display: block;
+      min-height: 440px;
+    }
+
+    .grid-lines path {
+      stroke: #1d344944;
+      stroke-width: 1;
+      fill: none;
+    }
+
+    .line-path {
+      fill: none;
+      stroke-width: 9;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      opacity: 0.95;
+      filter: drop-shadow(0 0 8px #00000077);
+    }
+
+    .line-path.overlay {
+      stroke: #ffffff3d;
+      stroke-width: 1.7;
+      opacity: 0.9;
+      filter: none;
+    }
+
+    .heat-bloom {
+      pointer-events: none;
+      transition: r 220ms linear, fill 220ms linear, opacity 220ms linear;
+      mix-blend-mode: screen;
+      filter: blur(0.3px);
+    }
+
+    .station-node {
+      cursor: pointer;
+      transition: transform 180ms ease;
+      transform-origin: center;
+    }
+
+    .station-core {
+      fill: #d9ecff;
+      stroke: #06101a;
+      stroke-width: 1.4;
+      transition: fill 180ms ease, stroke 180ms ease;
+    }
+
+    .station-ring {
+      fill: #092136;
+      stroke: #7fb8f0;
+      stroke-width: 1.3;
+      transition: stroke 200ms ease, r 200ms ease;
+    }
+
+    .station-node:hover .station-ring,
+    .station-node.selected .station-ring {
+      stroke: #ffd98f;
+    }
+
+    .station-node.selected .station-core {
+      fill: #ffe5af;
+    }
+
+    .station-label {
+      fill: #9db8d0;
+      font-size: 12px;
+      font-family: "IBM Plex Mono", monospace;
+      pointer-events: none;
+      paint-order: stroke;
+      stroke: #081522;
+      stroke-width: 3;
+      stroke-linejoin: round;
+    }
+
+    .train {
+      stroke: #072134;
+      stroke-width: 2.4;
+      filter: drop-shadow(0 0 6px currentColor);
+    }
+
+    .map-legend {
+      position: absolute;
+      right: 12px;
+      top: 12px;
+      display: grid;
+      gap: 6px;
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid #3a5674;
+      background: #071826d9;
+      backdrop-filter: blur(8px);
+      font-size: 0.72rem;
+      min-width: 140px;
+    }
+
+    .legend-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      color: #b4ccdf;
+      font-family: "IBM Plex Mono", monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .legend-color {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      margin-right: 8px;
+      box-shadow: 0 0 8px #00000099;
+    }
+
+    .legend-left {
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .slider-wrap {
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid #2b4865;
+      background: #0d253a;
+      display: grid;
+      gap: 8px;
+    }
+
+    .slider-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .slider-head h3 {
+      margin: 0;
+      font-size: 0.88rem;
+      letter-spacing: 0.03em;
+      font-family: "IBM Plex Mono", monospace;
+      text-transform: uppercase;
+      color: #b9d4e8;
+    }
+
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    button {
+      appearance: none;
+      border: 1px solid #3d607f;
+      background: #123049;
+      color: #d4e8f8;
+      border-radius: 8px;
+      padding: 7px 11px;
+      font: 500 0.78rem/1 "IBM Plex Mono", monospace;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      text-transform: uppercase;
+      transition: transform 150ms ease, background 150ms ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      background: #173954;
+    }
+
+    #timeSlider {
+      width: 100%;
+      accent-color: #4e91ce;
+      cursor: pointer;
+    }
+
+    .ticks {
+      display: flex;
+      justify-content: space-between;
+      color: #88a6c2;
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 0.71rem;
+    }
+
+    .side-panel {
+      padding: 16px;
+      display: grid;
+      grid-template-rows: auto auto auto 1fr;
+      gap: 12px;
+    }
+
+    .station-header h2 {
+      margin: 0;
+      font-size: 1.2rem;
+      line-height: 1.15;
+    }
+
+    .station-header p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 0.84rem;
+    }
+
+    .line-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-top: 8px;
+    }
+
+    .line-badge {
+      padding: 5px 8px;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      font-family: "IBM Plex Mono", monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      border: 1px solid #ffffff3a;
+      color: #081321;
+      font-weight: 700;
+    }
+
+    .line-red { background: #ff8c8c; }
+    .line-gold { background: #ffd46f; }
+    .line-blue { background: #8cb7ff; }
+    .line-green { background: #7ae6bb; }
+
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .stat-card {
+      border: 1px solid #2f4e6d;
+      border-radius: 10px;
+      background: #10263b;
+      padding: 10px;
+      min-height: 74px;
+    }
+
+    .stat-card label {
+      display: block;
+      font-size: 0.66rem;
+      color: #88a7c3;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-family: "IBM Plex Mono", monospace;
+    }
+
+    .stat-card strong {
+      display: block;
+      margin-top: 6px;
+      font-size: 1rem;
+      line-height: 1;
+    }
+
+    .chart-card,
+    .list-card {
+      border: 1px solid #2f4d6b;
+      border-radius: 12px;
+      padding: 10px;
+      background: #0f2437;
+    }
+
+    .card-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: #9ec0dc;
+      font-family: "IBM Plex Mono", monospace;
+    }
+
+    #stationChart {
+      width: 100%;
+      height: 178px;
+      display: block;
+      border-radius: 8px;
+      background: #0b1c2d;
+      border: 1px solid #284660;
+    }
+
+    .forecast-list,
+    .hot-list {
+      display: grid;
+      gap: 7px;
+    }
+
+    .forecast-item,
+    .hot-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 9px;
+      border-radius: 8px;
+      background: #12314a;
+      border: 1px solid #325474;
+      font-size: 0.82rem;
+    }
+
+    .forecast-item time,
+    .hot-item span:first-child {
+      color: #b8d2e7;
+    }
+
+    .forecast-item strong,
+    .hot-item strong {
+      font-family: "IBM Plex Mono", monospace;
+      letter-spacing: 0.02em;
+    }
+
+    .mild { color: var(--good); }
+    .moderate { color: var(--warn); }
+    .heavy { color: var(--bad); }
+
+    .footer-note {
+      color: #6f89a2;
+      font-size: 0.75rem;
+      margin: 0;
+      line-height: 1.45;
+    }
+
+    @media (max-width: 1180px) {
+      .layout { grid-template-columns: 1fr; }
+      .map-panel { min-height: 640px; }
+      .side-panel { grid-template-rows: auto auto auto auto; }
+    }
+
+    @media (max-width: 860px) {
+      .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .topbar { flex-direction: column; align-items: flex-start; }
+      #mapSvg { min-height: 380px; }
+      .ticks { font-size: 0.64rem; }
+    }
+
+    @media (max-width: 560px) {
+      .shell { padding: 12px; }
+      .map-panel,
+      .side-panel { padding: 12px; }
+      .kpi { min-height: 80px; }
+      .stat-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <div class="title-wrap">
+        <h1>MARTA Transit Analytics, Atlanta Operations Digital Twin</h1>
+        <p>Live-simulated network flow with station-level ridership forecasting and congestion telemetry.</p>
+      </div>
+      <div class="status-wrap">
+        <div class="chip live"><span class="live-dot"></span>Network Simulation Active</div>
+        <div class="chip" id="simClock">06:30</div>
+        <div class="chip" id="demandState">Early Service</div>
+      </div>
+    </header>
+
+    <section class="layout">
+      <article class="panel map-panel">
+        <div class="panel-title">
+          <div>
+            <h2>Real-time Rail Command Map</h2>
+            <p>Animated train telemetry on Red, Gold, Blue, and Green lines.</p>
+          </div>
+        </div>
+
+        <div class="kpis">
+          <div class="kpi">
+            <label>Network Riders / Hr</label>
+            <strong id="networkRiders">0</strong>
+            <span>Predicted boardings now</span>
+          </div>
+          <div class="kpi">
+            <label>Average Crowding</label>
+            <strong id="avgCrowding">0%</strong>
+            <span>Across all active stations</span>
+          </div>
+          <div class="kpi">
+            <label>Peak Station</label>
+            <strong id="peakStation">-</strong>
+            <span id="peakStationLoad">0 riders/hr</span>
+          </div>
+          <div class="kpi">
+            <label>Predicted Headway</label>
+            <strong id="headway">0 min</strong>
+            <span>Adaptive scheduling estimate</span>
+          </div>
+        </div>
+
+        <div class="map-wrap">
+          <svg id="mapSvg" viewBox="0 0 1000 640" role="img" aria-label="MARTA rail map with moving trains and station demand heatmap">
+            <defs>
+              <filter id="softGlow" x="-40%" y="-40%" width="180%" height="180%">
+                <feGaussianBlur stdDeviation="3" result="blur"></feGaussianBlur>
+                <feMerge>
+                  <feMergeNode in="blur"></feMergeNode>
+                  <feMergeNode in="SourceGraphic"></feMergeNode>
+                </feMerge>
+              </filter>
+              <pattern id="dots" width="20" height="20" patternUnits="userSpaceOnUse">
+                <circle cx="1" cy="1" r="1" fill="#163349"></circle>
+              </pattern>
+            </defs>
+
+            <rect x="0" y="0" width="1000" height="640" fill="url(#dots)"></rect>
+
+            <g class="grid-lines">
+              <path d="M50 85 L950 85"></path>
+              <path d="M50 185 L950 185"></path>
+              <path d="M50 285 L950 285"></path>
+              <path d="M50 385 L950 385"></path>
+              <path d="M50 485 L950 485"></path>
+              <path d="M150 45 L150 600"></path>
+              <path d="M300 45 L300 600"></path>
+              <path d="M450 45 L450 600"></path>
+              <path d="M600 45 L600 600"></path>
+              <path d="M750 45 L750 600"></path>
+              <path d="M900 45 L900 600"></path>
+            </g>
+
+            <g id="lineLayer"></g>
+            <g id="heatLayer"></g>
+            <g id="stationLayer"></g>
+            <g id="trainLayer"></g>
+          </svg>
+
+          <div class="map-legend">
+            <div class="legend-row"><span class="legend-left"><span class="legend-color" style="background:var(--red)"></span>Red</span><span>North-South</span></div>
+            <div class="legend-row"><span class="legend-left"><span class="legend-color" style="background:var(--gold)"></span>Gold</span><span>NE Connector</span></div>
+            <div class="legend-row"><span class="legend-left"><span class="legend-color" style="background:var(--blue)"></span>Blue</span><span>West-East</span></div>
+            <div class="legend-row"><span class="legend-left"><span class="legend-color" style="background:var(--green)"></span>Green</span><span>Core Shuttle</span></div>
+            <div class="legend-row"><span class="legend-left"><span class="legend-color" style="background:#ff7c4a"></span>Heat</span><span>Passenger Load</span></div>
+          </div>
+        </div>
+
+        <div class="slider-wrap">
+          <div class="slider-head">
+            <h3>Simulated Day Scrubber</h3>
+            <div class="controls">
+              <button id="playToggle" type="button">Pause</button>
+              <button id="jumpRush" type="button">Jump to Rush</button>
+            </div>
+          </div>
+          <input id="timeSlider" type="range" min="0" max="1439" step="15" value="390" aria-label="Transit simulation time slider">
+          <div class="ticks">
+            <span>00:00</span>
+            <span>06:00</span>
+            <span>09:00</span>
+            <span>12:00</span>
+            <span>17:00</span>
+            <span>21:00</span>
+            <span>24:00</span>
+          </div>
+        </div>
+      </article>
+
+      <aside class="panel side-panel">
+        <div class="station-header">
+          <h2 id="stationName">Five Points</h2>
+          <p id="stationSub">Multiline transfer hub</p>
+          <div class="line-badges" id="lineBadges"></div>
+        </div>
+
+        <div class="stat-grid">
+          <div class="stat-card">
+            <label>Predicted Riders / Hr</label>
+            <strong id="stationRiders">0</strong>
+          </div>
+          <div class="stat-card">
+            <label>Crowding Index</label>
+            <strong id="crowdingIndex">0%</strong>
+          </div>
+          <div class="stat-card">
+            <label>Incoming Trains</label>
+            <strong id="incomingTrains">0</strong>
+          </div>
+          <div class="stat-card">
+            <label>Platform Status</label>
+            <strong id="platformStatus">Stable</strong>
+          </div>
+        </div>
+
+        <section class="chart-card">
+          <div class="card-title">
+            <span>24H Ridership Forecast</span>
+            <span id="chartTag">Model: LSTM + XGB</span>
+          </div>
+          <canvas id="stationChart" width="360" height="178"></canvas>
+        </section>
+
+        <section class="list-card">
+          <div class="card-title">
+            <span>Upcoming Windows</span>
+            <span id="nextWindow">+3 Hours</span>
+          </div>
+          <div class="forecast-list" id="forecastList"></div>
+
+          <div class="card-title" style="margin-top:10px;">
+            <span>Highest Demand Stations</span>
+            <span>Live</span>
+          </div>
+          <div class="hot-list" id="hotList"></div>
+        </section>
+
+        <p class="footer-note">
+          Simulation mode uses pre-canned but realistic demand curves tuned for weekday commute behavior and transfer pressure across the MARTA core.
+        </p>
+      </aside>
+    </section>
+  </div>
+
+  <script>
+    (function() {
+      "use strict";
+
+      const STATIONS = [
+        { id: "north-springs", name: "North Springs", x: 548, y: 72, lines: ["Red"], base: 470, profile: "residential", subtitle: "North Fulton commuter gateway", label: true },
+        { id: "sandy-springs", name: "Sandy Springs", x: 530, y: 108, lines: ["Red"], base: 520, profile: "residential", subtitle: "Office + residential mix" },
+        { id: "dunwoody", name: "Dunwoody", x: 512, y: 145, lines: ["Red"], base: 540, profile: "residential", subtitle: "Perimeter corridor access" },
+        { id: "medical-center", name: "Medical Center", x: 497, y: 178, lines: ["Red"], base: 500, profile: "medical", subtitle: "Healthcare commuter flows" },
+        { id: "buckhead", name: "Buckhead", x: 482, y: 214, lines: ["Red"], base: 650, profile: "business", subtitle: "High-value employment district", label: true },
+        { id: "lindbergh", name: "Lindbergh Center", x: 468, y: 252, lines: ["Red", "Gold"], base: 1040, profile: "transfer", subtitle: "Major transfer node", label: true },
+        { id: "midtown", name: "Midtown", x: 454, y: 320, lines: ["Red", "Gold"], base: 1150, profile: "business", subtitle: "Employment + education core", label: true },
+        { id: "civic-center", name: "Civic Center", x: 447, y: 360, lines: ["Red", "Gold"], base: 760, profile: "business", subtitle: "Downtown access" },
+        { id: "peachtree-center", name: "Peachtree Center", x: 444, y: 392, lines: ["Red", "Gold"], base: 970, profile: "business", subtitle: "CBD transit anchor" },
+        { id: "five-points", name: "Five Points", x: 441, y: 425, lines: ["Red", "Gold", "Blue", "Green"], base: 1700, profile: "transfer", subtitle: "Systemwide transfer superhub", label: true },
+        { id: "garnett", name: "Garnett", x: 438, y: 460, lines: ["Red", "Gold"], base: 780, profile: "business", subtitle: "Downtown south connector" },
+        { id: "west-end", name: "West End", x: 434, y: 498, lines: ["Red", "Gold"], base: 840, profile: "residential", subtitle: "SW Atlanta commuter station" },
+        { id: "oakland-city", name: "Oakland City", x: 430, y: 535, lines: ["Red", "Gold"], base: 700, profile: "residential", subtitle: "Neighborhood mobility hub" },
+        { id: "east-point", name: "East Point", x: 425, y: 567, lines: ["Red", "Gold"], base: 740, profile: "residential", subtitle: "Airport workforce corridor" },
+        { id: "airport", name: "Airport", x: 420, y: 600, lines: ["Red", "Gold"], base: 1300, profile: "airport", subtitle: "Hartsfield-Jackson interface", label: true },
+
+        { id: "doraville", name: "Doraville", x: 664, y: 122, lines: ["Gold"], base: 480, profile: "residential", subtitle: "Northeast feeder", label: true },
+        { id: "chamblee", name: "Chamblee", x: 630, y: 150, lines: ["Gold"], base: 500, profile: "residential", subtitle: "Mixed-use growth corridor" },
+        { id: "brookhaven", name: "Brookhaven/Oglethorpe", x: 592, y: 184, lines: ["Gold"], base: 540, profile: "residential", subtitle: "University + commuter traffic" },
+        { id: "lenox", name: "Lenox", x: 535, y: 230, lines: ["Gold"], base: 620, profile: "business", subtitle: "Retail and office trips" },
+
+        { id: "hamilton-holmes", name: "Hamilton E. Holmes", x: 190, y: 422, lines: ["Blue"], base: 560, profile: "residential", subtitle: "Western terminus", label: true },
+        { id: "west-lake", name: "West Lake", x: 248, y: 422, lines: ["Blue"], base: 480, profile: "residential", subtitle: "Westside resident flows" },
+        { id: "ashby", name: "Ashby", x: 300, y: 423, lines: ["Blue", "Green"], base: 690, profile: "residential", subtitle: "Blue/Green transfer point" },
+        { id: "vine-city", name: "Vine City", x: 344, y: 423, lines: ["Blue", "Green"], base: 760, profile: "event", subtitle: "Stadium event surges" },
+        { id: "gwcc", name: "GWCC/CNN Center", x: 389, y: 423, lines: ["Blue", "Green"], base: 820, profile: "event", subtitle: "Convention and game day demand" },
+        { id: "georgia-state", name: "Georgia State", x: 474, y: 430, lines: ["Blue"], base: 860, profile: "business", subtitle: "University commuter demand" },
+        { id: "king-memorial", name: "King Memorial", x: 522, y: 430, lines: ["Blue", "Green"], base: 680, profile: "residential", subtitle: "East downtown connector" },
+        { id: "inman-park", name: "Inman Park/Reynoldstown", x: 571, y: 430, lines: ["Blue"], base: 720, profile: "residential", subtitle: "In-town neighborhood access" },
+        { id: "edgewood", name: "Edgewood/Candler Park", x: 623, y: 430, lines: ["Blue", "Green"], base: 740, profile: "residential", subtitle: "Eastside transfer pressure" },
+        { id: "east-lake", name: "East Lake", x: 680, y: 430, lines: ["Blue", "Green"], base: 670, profile: "residential", subtitle: "East corridor commuter station", label: true },
+        { id: "decatur", name: "Decatur", x: 740, y: 430, lines: ["Blue"], base: 900, profile: "business", subtitle: "City center station", label: true },
+        { id: "avondale", name: "Avondale", x: 792, y: 430, lines: ["Blue"], base: 640, profile: "residential", subtitle: "Suburban commuter flows" },
+        { id: "kensington", name: "Kensington", x: 850, y: 430, lines: ["Blue"], base: 560, profile: "residential", subtitle: "Eastern terminus" },
+
+        { id: "bankhead", name: "Bankhead", x: 262, y: 372, lines: ["Green"], base: 520, profile: "residential", subtitle: "Green line terminus", label: true }
+      ];
+
+      const LINE_STOPS = {
+        Red: ["north-springs", "sandy-springs", "dunwoody", "medical-center", "buckhead", "lindbergh", "midtown", "civic-center", "peachtree-center", "five-points", "garnett", "west-end", "oakland-city", "east-point", "airport"],
+        Gold: ["doraville", "chamblee", "brookhaven", "lenox", "lindbergh", "midtown", "civic-center", "peachtree-center", "five-points", "garnett", "west-end", "oakland-city", "east-point", "airport"],
+        Blue: ["hamilton-holmes", "west-lake", "ashby", "vine-city", "gwcc", "five-points", "georgia-state", "king-memorial", "inman-park", "edgewood", "east-lake", "decatur", "avondale", "kensington"],
+        Green: ["bankhead", "ashby", "vine-city", "gwcc", "five-points", "king-memorial", "edgewood", "east-lake"]
+      };
+
+      const LINE_COLORS = {
+        Red: "#e44848",
+        Gold: "#f1bd2d",
+        Blue: "#2f7cff",
+        Green: "#00bb7b"
+      };
+
+      const PROFILE = {
+        transfer: { morning: 1.45, midday: 1.05, evening: 1.42, night: 0.45 },
+        business: { morning: 1.25, midday: 1.12, evening: 1.2, night: 0.35 },
+        residential: { morning: 1.1, midday: 0.76, evening: 1.3, night: 0.38 },
+        airport: { morning: 0.9, midday: 1.2, evening: 0.95, night: 0.82 },
+        event: { morning: 0.85, midday: 1.1, evening: 1.28, night: 0.52 },
+        medical: { morning: 1.2, midday: 1.0, evening: 0.9, night: 0.48 }
+      };
+
+      const svgNs = "http://www.w3.org/2000/svg";
+      const stationLookup = Object.fromEntries(STATIONS.map((station) => [station.id, station]));
+      const lineLayer = document.getElementById("lineLayer");
+      const heatLayer = document.getElementById("heatLayer");
+      const stationLayer = document.getElementById("stationLayer");
+      const trainLayer = document.getElementById("trainLayer");
+      const timeSlider = document.getElementById("timeSlider");
+      const playToggle = document.getElementById("playToggle");
+      const jumpRush = document.getElementById("jumpRush");
+
+      const nodes = new Map();
+      const heatNodes = new Map();
+      const linePaths = {};
+      const trains = [];
+
+      let selectedStationId = "five-points";
+      let simMinutes = Number(timeSlider.value);
+      let autoplay = true;
+      let lastFrame = performance.now();
+
+      function gaussian(x, mean, sigma) {
+        const z = (x - mean) / sigma;
+        return Math.exp(-0.5 * z * z);
+      }
+
+      function normalizeMinutes(minutes) {
+        const fullDay = 1440;
+        return ((minutes % fullDay) + fullDay) % fullDay;
+      }
+
+      function ridershipForStation(station, minutes) {
+        const profile = PROFILE[station.profile] || PROFILE.residential;
+        const hour = normalizeMinutes(minutes) / 60;
+        const morning = gaussian(hour, 8.1, 1.65) * profile.morning;
+        const midday = gaussian(hour, 13.0, 3.2) * profile.midday;
+        const evening = gaussian(hour, 17.45, 2.05) * profile.evening;
+
+        const extendedHour = hour < 5 ? hour + 24 : hour;
+        const night = gaussian(extendedHour, 25.3, 2.8) * profile.night;
+
+        const oscillation = 1 + 0.07 * Math.sin((minutes / 38) + station.x * 0.013 + station.y * 0.01);
+        const demand = 0.24 + (morning * 0.88) + (midday * 0.48) + (evening * 0.9) + (night * 0.28);
+
+        return Math.max(35, Math.round(station.base * demand * oscillation));
+      }
+
+      function crowdingForStation(station, riders) {
+        const capacity = station.base * 1.68;
+        return Math.min(1.85, riders / capacity);
+      }
+
+      function formatNumber(value) {
+        return value.toLocaleString("en-US");
+      }
+
+      function formatClock(minutes) {
+        const normalized = normalizeMinutes(minutes);
+        const h = Math.floor(normalized / 60);
+        const m = Math.floor(normalized % 60);
+        const hour12 = h % 12 || 12;
+        const suffix = h >= 12 ? "PM" : "AM";
+        return `${hour12.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")} ${suffix}`;
+      }
+
+      function demandLabel(minutes) {
+        const h = normalizeMinutes(minutes) / 60;
+        if (h >= 6 && h < 9.5) return "Morning Rush";
+        if (h >= 9.5 && h < 15.5) return "Midday Flow";
+        if (h >= 15.5 && h < 19.5) return "Evening Rush";
+        if (h >= 19.5 && h < 23) return "Evening Taper";
+        return "Overnight Service";
+      }
+
+      function loadColor(normalizedLoad) {
+        const clamped = Math.max(0, Math.min(1, normalizedLoad));
+        const hue = 120 - (clamped * 115);
+        const alpha = 0.22 + (clamped * 0.56);
+        return `hsla(${hue}, 95%, 55%, ${alpha})`;
+      }
+
+      function createSvgNode(name, attrs) {
+        const node = document.createElementNS(svgNs, name);
+        Object.entries(attrs).forEach(([key, value]) => node.setAttribute(key, String(value)));
+        return node;
+      }
+
+      function buildLinePaths() {
+        Object.entries(LINE_STOPS).forEach(([lineName, stopIds]) => {
+          const d = stopIds
+            .map((id, idx) => {
+              const s = stationLookup[id];
+              return `${idx === 0 ? "M" : "L"} ${s.x} ${s.y}`;
+            })
+            .join(" ");
+
+          const base = createSvgNode("path", {
+            d,
+            class: "line-path",
+            stroke: LINE_COLORS[lineName],
+            id: `line-${lineName.toLowerCase()}`,
+            filter: "url(#softGlow)"
+          });
+
+          const overlay = createSvgNode("path", {
+            d,
+            class: "line-path overlay"
+          });
+
+          lineLayer.appendChild(base);
+          lineLayer.appendChild(overlay);
+          linePaths[lineName] = base;
+
+          const labelStop = stopIds[Math.floor(stopIds.length / 2)];
+          const anchor = stationLookup[labelStop];
+          const text = createSvgNode("text", {
+            x: anchor.x + (lineName === "Blue" ? 10 : 12),
+            y: anchor.y - (lineName === "Red" || lineName === "Gold" ? 12 : 10),
+            fill: LINE_COLORS[lineName],
+            "font-size": 12,
+            "font-family": "IBM Plex Mono, monospace",
+            "font-weight": 600
+          });
+          text.textContent = lineName.toUpperCase();
+          lineLayer.appendChild(text);
+        });
+      }
+
+      function buildStations() {
+        STATIONS.forEach((station) => {
+          const heat = createSvgNode("circle", {
+            cx: station.x,
+            cy: station.y,
+            r: 8,
+            class: "heat-bloom",
+            fill: "#38df9e",
+            opacity: 0.25
+          });
+          heatLayer.appendChild(heat);
+          heatNodes.set(station.id, heat);
+
+          const group = createSvgNode("g", { class: "station-node", "data-id": station.id });
+          const ring = createSvgNode("circle", { cx: station.x, cy: station.y, r: 7.6, class: "station-ring" });
+          const core = createSvgNode("circle", { cx: station.x, cy: station.y, r: 3.6, class: "station-core" });
+
+          group.appendChild(ring);
+          group.appendChild(core);
+
+          if (station.label) {
+            const label = createSvgNode("text", {
+              x: station.x + 9,
+              y: station.y - 9,
+              class: "station-label"
+            });
+            label.textContent = station.name;
+            group.appendChild(label);
+          }
+
+          group.addEventListener("click", () => {
+            selectedStationId = station.id;
+            autoplay = false;
+            playToggle.textContent = "Play";
+            updateDashboard();
+          });
+
+          stationLayer.appendChild(group);
+          nodes.set(station.id, group);
+        });
+      }
+
+      function buildTrains() {
+        const trainConfig = {
+          Red: { count: 3, speed: 0.0092 },
+          Gold: { count: 3, speed: 0.0088 },
+          Blue: { count: 4, speed: 0.0096 },
+          Green: { count: 2, speed: 0.0104 }
+        };
+
+        Object.entries(trainConfig).forEach(([lineName, cfg]) => {
+          const path = linePaths[lineName];
+          const length = path.getTotalLength();
+
+          for (let i = 0; i < cfg.count; i++) {
+            const dot = createSvgNode("circle", {
+              r: lineName === "Green" ? 5 : 5.4,
+              class: "train",
+              fill: LINE_COLORS[lineName],
+              stroke: "#072134"
+            });
+            trainLayer.appendChild(dot);
+
+            trains.push({
+              lineName,
+              node: dot,
+              path,
+              length,
+              progress: (i + 1) / (cfg.count + 1),
+              direction: i % 2 === 0 ? 1 : -1,
+              speed: cfg.speed
+            });
+          }
+        });
+      }
+
+      function networkDemandFactor(minutes) {
+        const hour = normalizeMinutes(minutes) / 60;
+        return 0.55 + (gaussian(hour, 8.0, 1.85) * 0.85) + (gaussian(hour, 17.35, 2.1) * 0.88);
+      }
+
+      function updateTrains(dtSeconds) {
+        const speedFactor = 0.72 + networkDemandFactor(simMinutes) * 0.5;
+
+        trains.forEach((train) => {
+          train.progress += train.direction * train.speed * dtSeconds * speedFactor;
+
+          if (train.progress > 1) {
+            train.progress = 1;
+            train.direction = -1;
+          } else if (train.progress < 0) {
+            train.progress = 0;
+            train.direction = 1;
+          }
+
+          const point = train.path.getPointAtLength(train.progress * train.length);
+          train.node.setAttribute("cx", point.x);
+          train.node.setAttribute("cy", point.y);
+        });
+      }
+
+      function lineBadge(line) {
+        return `<span class="line-badge line-${line.toLowerCase()}">${line}</span>`;
+      }
+
+      function statusFromCrowding(crowding) {
+        if (crowding >= 1.05) return { label: "Heavy", className: "heavy" };
+        if (crowding >= 0.78) return { label: "Moderate", className: "moderate" };
+        return { label: "Mild", className: "mild" };
+      }
+
+      function updateChart(station) {
+        const canvas = document.getElementById("stationChart");
+        const ctx = canvas.getContext("2d");
+
+        const cssWidth = canvas.clientWidth || 360;
+        const cssHeight = canvas.clientHeight || 178;
+        const dpr = window.devicePixelRatio || 1;
+        canvas.width = Math.round(cssWidth * dpr);
+        canvas.height = Math.round(cssHeight * dpr);
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+        ctx.clearRect(0, 0, cssWidth, cssHeight);
+
+        ctx.fillStyle = "#091726";
+        ctx.fillRect(0, 0, cssWidth, cssHeight);
+
+        const padding = { left: 32, right: 14, top: 18, bottom: 26 };
+        const chartWidth = cssWidth - padding.left - padding.right;
+        const chartHeight = cssHeight - padding.top - padding.bottom;
+
+        const points = [];
+        let max = 0;
+        for (let hour = 0; hour < 24; hour++) {
+          const value = ridershipForStation(station, hour * 60);
+          points.push({ hour, value });
+          if (value > max) max = value;
+        }
+
+        ctx.strokeStyle = "#244159";
+        ctx.lineWidth = 1;
+        for (let i = 0; i <= 4; i++) {
+          const y = padding.top + (chartHeight * i / 4);
+          ctx.beginPath();
+          ctx.moveTo(padding.left, y);
+          ctx.lineTo(padding.left + chartWidth, y);
+          ctx.stroke();
+        }
+
+        const gradient = ctx.createLinearGradient(0, padding.top, 0, padding.top + chartHeight);
+        gradient.addColorStop(0, "#39b2ff9a");
+        gradient.addColorStop(1, "#39b2ff05");
+
+        ctx.beginPath();
+        points.forEach((point, idx) => {
+          const x = padding.left + (point.hour / 23) * chartWidth;
+          const y = padding.top + chartHeight - (point.value / max) * chartHeight;
+          if (idx === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        });
+        ctx.lineTo(padding.left + chartWidth, padding.top + chartHeight);
+        ctx.lineTo(padding.left, padding.top + chartHeight);
+        ctx.closePath();
+        ctx.fillStyle = gradient;
+        ctx.fill();
+
+        ctx.beginPath();
+        points.forEach((point, idx) => {
+          const x = padding.left + (point.hour / 23) * chartWidth;
+          const y = padding.top + chartHeight - (point.value / max) * chartHeight;
+          if (idx === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        });
+        ctx.strokeStyle = "#6bc4ff";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        const nowHour = normalizeMinutes(simMinutes) / 60;
+        const xNow = padding.left + (nowHour / 23) * chartWidth;
+        ctx.beginPath();
+        ctx.moveTo(xNow, padding.top);
+        ctx.lineTo(xNow, padding.top + chartHeight);
+        ctx.strokeStyle = "#ffd56a";
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([4, 4]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        ctx.fillStyle = "#86a7c4";
+        ctx.font = '11px "IBM Plex Mono"';
+        [0, 6, 12, 18, 23].forEach((h) => {
+          const x = padding.left + (h / 23) * chartWidth;
+          ctx.fillText(`${String(h).padStart(2, "0")}:00`, x - 14, cssHeight - 7);
+        });
+      }
+
+      function updateDashboard() {
+        const stationValues = STATIONS.map((station) => {
+          const riders = ridershipForStation(station, simMinutes);
+          const crowding = crowdingForStation(station, riders);
+          return { station, riders, crowding };
+        });
+
+        const totalRiders = stationValues.reduce((sum, row) => sum + row.riders, 0);
+        const avgCrowding = stationValues.reduce((sum, row) => sum + row.crowding, 0) / stationValues.length;
+        const peak = stationValues.reduce((best, row) => (row.riders > best.riders ? row : best), stationValues[0]);
+
+        document.getElementById("networkRiders").textContent = formatNumber(totalRiders);
+        document.getElementById("avgCrowding").textContent = `${Math.round(avgCrowding * 100)}%`;
+        document.getElementById("peakStation").textContent = peak.station.name;
+        document.getElementById("peakStationLoad").textContent = `${formatNumber(peak.riders)} riders/hr`;
+
+        const demandFactor = networkDemandFactor(simMinutes);
+        const headwayMinutes = Math.max(2.8, 7.2 - demandFactor * 2.3);
+        document.getElementById("headway").textContent = `${headwayMinutes.toFixed(1)} min`;
+
+        document.getElementById("simClock").textContent = formatClock(simMinutes);
+        document.getElementById("demandState").textContent = demandLabel(simMinutes);
+
+        stationValues.forEach(({ station, riders, crowding }) => {
+          const heatNode = heatNodes.get(station.id);
+          const norm = Math.min(1, riders / (station.base * 1.9));
+          const radius = 8 + (norm * 22);
+          heatNode.setAttribute("r", radius.toFixed(2));
+          heatNode.setAttribute("fill", loadColor(norm));
+          heatNode.setAttribute("opacity", (0.18 + norm * 0.58).toFixed(2));
+
+          const node = nodes.get(station.id);
+          if (station.id === selectedStationId) {
+            node.classList.add("selected");
+          } else {
+            node.classList.remove("selected");
+          }
+
+          if (crowding > 1.05) {
+            node.querySelector(".station-core").setAttribute("fill", "#ffd4ba");
+          } else if (crowding > 0.78) {
+            node.querySelector(".station-core").setAttribute("fill", "#fff3c7");
+          } else {
+            node.querySelector(".station-core").setAttribute("fill", "#d9ecff");
+          }
+        });
+
+        const selected = stationValues.find((row) => row.station.id === selectedStationId) || stationValues[0];
+        const selectedStation = selected.station;
+
+        document.getElementById("stationName").textContent = selectedStation.name;
+        document.getElementById("stationSub").textContent = selectedStation.subtitle;
+        document.getElementById("lineBadges").innerHTML = selectedStation.lines.map(lineBadge).join("");
+        document.getElementById("stationRiders").textContent = formatNumber(selected.riders);
+        document.getElementById("crowdingIndex").textContent = `${Math.round(selected.crowding * 100)}%`;
+
+        const incoming = Math.max(1, Math.round(selectedStation.lines.length * (1.4 + networkDemandFactor(simMinutes) * 0.7)));
+        document.getElementById("incomingTrains").textContent = `${incoming} in 10m`;
+
+        const status = statusFromCrowding(selected.crowding);
+        const platformStatus = document.getElementById("platformStatus");
+        platformStatus.textContent = status.label;
+        platformStatus.className = status.className;
+
+        const forecastList = document.getElementById("forecastList");
+        const windows = [30, 60, 90, 120, 180];
+        forecastList.innerHTML = windows.map((offset) => {
+          const futureMinute = simMinutes + offset;
+          const forecast = ridershipForStation(selectedStation, futureMinute);
+          return `<div class="forecast-item"><time>${formatClock(futureMinute)}</time><strong>${formatNumber(forecast)}</strong></div>`;
+        }).join("");
+
+        const hotList = document.getElementById("hotList");
+        const topStations = [...stationValues].sort((a, b) => b.riders - a.riders).slice(0, 5);
+        hotList.innerHTML = topStations.map((row) => {
+          return `<div class="hot-item"><span>${row.station.name}</span><strong>${formatNumber(row.riders)}</strong></div>`;
+        }).join("");
+
+        updateChart(selectedStation);
+      }
+
+      function frame(now) {
+        const dt = Math.max(0, (now - lastFrame) / 1000);
+        lastFrame = now;
+
+        if (autoplay) {
+          simMinutes = normalizeMinutes(simMinutes + dt * 14.5);
+          timeSlider.value = String(Math.round(simMinutes / 15) * 15 % 1440);
+        }
+
+        updateTrains(dt);
+
+        if (!frame.lastUiUpdate || now - frame.lastUiUpdate > 180) {
+          updateDashboard();
+          frame.lastUiUpdate = now;
+        }
+
+        requestAnimationFrame(frame);
+      }
+
+      timeSlider.addEventListener("input", (event) => {
+        simMinutes = Number(event.target.value);
+        autoplay = false;
+        playToggle.textContent = "Play";
+        updateDashboard();
+      });
+
+      playToggle.addEventListener("click", () => {
+        autoplay = !autoplay;
+        playToggle.textContent = autoplay ? "Pause" : "Play";
+      });
+
+      jumpRush.addEventListener("click", () => {
+        simMinutes = 8 * 60 + 15;
+        timeSlider.value = String(simMinutes);
+        autoplay = false;
+        playToggle.textContent = "Play";
+        updateDashboard();
+      });
+
+      buildLinePaths();
+      buildStations();
+      buildTrains();
+      updateDashboard();
+      requestAnimationFrame(frame);
+    })();
+  </script>
+</body>
+</html>
