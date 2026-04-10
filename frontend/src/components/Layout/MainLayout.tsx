@@ -1,190 +1,266 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { TransitMap } from '@/components/Map/TransitMap';
 import { SearchBar } from '@/components/Search/SearchBar';
-import { BottomDrawer } from '@/components/Drawer/BottomDrawer';
 import { useAppStore } from '@/store';
-import { Settings, Layers, Satellite, Sun, Moon } from 'lucide-react';
+import { Layers, Info, ChevronDown, ChevronUp, Train, MapPin, Clock, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export const MainLayout: React.FC = () => {
-  const { 
-    mapStyle, 
-    setMapStyle, 
-    showDemandHeatmap, 
+  const {
+    showDemandHeatmap,
     toggleDemandHeatmap,
     isConnected,
     fetchStops,
     fetchRoutes,
-    setConnected
+    setConnected,
+    selectedStop,
+    setSelectedStop,
   } = useAppStore();
 
-  // Fetch data on mount
+  const [showMapControls, setShowMapControls] = useState(false);
+
   useEffect(() => {
-    const initializeData = async () => {
+    const init = async () => {
       try {
         await Promise.all([fetchStops(), fetchRoutes()]);
         setConnected(true);
-      } catch (error) {
-        console.error('Failed to initialize data:', error);
+      } catch {
         setConnected(false);
       }
     };
-
-    initializeData();
+    init();
   }, [fetchStops, fetchRoutes, setConnected]);
 
   return (
-    <div className="h-screen flex flex-col bg-background overflow-hidden">
-      {/* Enhanced Header */}
-      <header className="flex-shrink-0 bg-gradient-to-r from-card via-card to-card/95 backdrop-blur-sm border-b border-border/50 shadow-lg z-20">
-        <div className="flex items-center justify-between px-6 py-4">
-          <div className="flex items-center gap-6">
-            <div className="flex items-center gap-3">
-              <motion.div 
-                className="w-10 h-10 bg-gradient-primary rounded-xl flex items-center justify-center shadow-lg"
-                whileHover={{ scale: 1.05, rotate: 5 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <span className="text-white font-bold text-lg">M</span>
-              </motion.div>
-              <div>
-                <h1 className="text-xl font-bold bg-gradient-to-r from-foreground to-muted-foreground bg-clip-text text-transparent">
-                  MARTA Analytics
-                </h1>
-                <p className="text-xs text-muted-foreground">Demand Forecasting & Route Optimization</p>
-              </div>
-            </div>
+    <div
+      id="map-page"
+      className="relative w-full overflow-hidden"
+      style={{ height: 'calc(100vh - var(--header-height, 96px))' }}
+    >
+      {/* Full-screen map */}
+      <TransitMap className="absolute inset-0" />
 
-            {/* Quick Stats */}
-            <div className="hidden md:flex items-center gap-4 ml-8">
-              <div className="flex items-center gap-2 px-3 py-1.5 bg-marta-green/10 border border-marta-green/20 rounded-lg">
-                <div className="w-2 h-2 bg-marta-green rounded-full animate-pulse"></div>
-                <span className="text-sm font-medium text-marta-green">System Active</span>
-              </div>
-              <div className="flex items-center gap-2 px-3 py-1.5 bg-marta-orange/10 border border-marta-orange/20 rounded-lg">
-                <span className="text-sm font-medium text-marta-orange">Real-time Data</span>
-              </div>
-              <div className="flex items-center gap-2 px-3 py-1.5 bg-marta-blue/10 border border-marta-blue/20 rounded-lg">
-                <span className="text-sm font-medium text-marta-blue">AI Optimized</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-4">
-            {/* Connection Status with Animation */}
-            <motion.div 
-              className="flex items-center gap-2 px-4 py-2 bg-secondary/50 backdrop-blur-sm rounded-xl border border-border/50"
-              animate={{ 
-                borderColor: isConnected ? 'hsl(var(--marta-green) / 0.3)' : 'hsl(var(--marta-red) / 0.3)'
-              }}
-              transition={{ duration: 2, repeat: Infinity, repeatType: 'reverse' }}
-            >
-              <motion.div 
-                className={`w-2 h-2 rounded-full ${isConnected ? 'bg-marta-green' : 'bg-marta-red'}`}
-                animate={{ scale: [1, 1.2, 1] }}
-                transition={{ duration: 1.5, repeat: Infinity }}
-              />
-              <span className="text-sm font-medium">
-                {isConnected ? 'Live Data' : 'Reconnecting...'}
-              </span>
-            </motion.div>
-
-            {/* Enhanced Map Controls */}
-            <div className="flex items-center gap-1 bg-secondary/50 backdrop-blur-sm rounded-xl p-1 border border-border/50">
-              {[
-                { style: 'light', icon: Sun, label: 'Light' },
-                { style: 'dark', icon: Moon, label: 'Dark' },
-                { style: 'satellite', icon: Satellite, label: 'Satellite' }
-              ].map(({ style, icon: Icon, label }) => (
-                <Button
-                  key={style}
-                  variant={mapStyle === style ? 'default' : 'ghost'}
-                  size="sm"
-                  onClick={() => setMapStyle(style as any)}
-                  className={`h-8 px-3 transition-all duration-300 ${
-                    mapStyle === style 
-                      ? 'bg-primary text-primary-foreground shadow-md' 
-                      : 'hover:bg-secondary/80'
-                  }`}
-                  title={label}
-                >
-                  <Icon className="w-4 h-4" />
-                </Button>
-              ))}
-            </div>
-
-            {/* Enhanced Heatmap Toggle */}
-            <Button
-              variant={showDemandHeatmap ? 'default' : 'outline'}
-              size="sm"
-              onClick={toggleDemandHeatmap}
-              className={`flex items-center gap-2 transition-all duration-300 ${
-                showDemandHeatmap 
-                  ? 'bg-gradient-demand shadow-lg hover:shadow-xl' 
-                  : 'hover:bg-secondary/80'
-              }`}
-            >
-              <Layers className="w-4 h-4" />
-              <span className="hidden sm:inline">Heatmap</span>
-              {showDemandHeatmap && (
-                <motion.div
-                  className="w-1 h-1 bg-white rounded-full"
-                  animate={{ scale: [1, 1.5, 1] }}
-                  transition={{ duration: 1, repeat: Infinity }}
-                />
-              )}
-            </Button>
-
-            {/* Settings with Badge */}
-            <div className="relative">
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  className="hover:bg-secondary/80 transition-all duration-300"
-                  onClick={() => {
-                    // Toggle drawer with settings tab
-                    const store = useAppStore.getState();
-                    store.setActiveTab('optimization');
-                    store.toggleDrawer();
-                  }}
-                >
-                  <Settings className="w-4 h-4" />
-                </Button>
-              </motion.div>
-              <motion.div
-                className="absolute -top-1 -right-1 w-2 h-2 bg-marta-red rounded-full"
-                animate={{ scale: [1, 1.2, 1] }}
-                transition={{ duration: 2, repeat: Infinity }}
-              />
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <div className="flex-1 relative overflow-hidden">
-        {/* Map */}
-        <TransitMap className="absolute inset-0" />
-
-        {/* Search Overlay */}
-        <div className="absolute top-6 left-6 z-10">
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-          >
-            <SearchBar />
-          </motion.div>
-        </div>
-
-        {/* Bottom Drawer */}
-        <BottomDrawer />
+      {/* Search overlay — top left */}
+      <div
+        id="map-search-overlay"
+        className="absolute top-4 left-4 right-4 sm:right-auto sm:max-w-sm z-10"
+      >
+        <motion.div
+          initial={{ opacity: 0, y: -12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15, duration: 0.3 }}
+        >
+          <SearchBar />
+        </motion.div>
       </div>
+
+      {/* Map controls — top right */}
+      <div
+        id="map-controls-overlay"
+        className="absolute top-4 right-4 z-10 flex flex-col gap-2"
+      >
+        <motion.div
+          initial={{ opacity: 0, x: 12 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.2 }}
+          className="flex flex-col gap-1.5"
+        >
+          {/* Heatmap toggle */}
+          <button
+            id="heatmap-toggle-btn"
+            onClick={toggleDemandHeatmap}
+            className={`flex items-center gap-2 pl-3 pr-3.5 py-2.5 rounded-xl text-sm font-semibold shadow-md transition-all ${
+              showDemandHeatmap
+                ? 'bg-blue-600 text-white shadow-blue-200'
+                : 'bg-white text-gray-700 border border-gray-200 hover:border-gray-300'
+            }`}
+            aria-pressed={showDemandHeatmap}
+            aria-label="Toggle demand heatmap"
+          >
+            <Layers className="w-4 h-4" />
+            <span className="hidden sm:inline">Heatmap</span>
+            {showDemandHeatmap && (
+              <span className="w-2 h-2 rounded-full bg-white/70" />
+            )}
+          </button>
+        </motion.div>
+      </div>
+
+      {/* Live status pill — bottom left (above bottom nav on mobile) */}
+      <motion.div
+        id="map-live-status"
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4 }}
+        className="absolute bottom-24 md:bottom-6 left-4 z-10"
+      >
+        <div
+          className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold shadow-md backdrop-blur-sm ${
+            isConnected
+              ? 'bg-white/95 text-green-700 border border-green-200'
+              : 'bg-white/95 text-gray-500 border border-gray-200'
+          }`}
+        >
+          <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500 arrival-pulse' : 'bg-gray-400'}`} />
+          {isConnected ? 'Live data' : 'Reconnecting...'}
+        </div>
+      </motion.div>
+
+      {/* Quick action FAB — bottom right */}
+      <motion.div
+        id="map-fab-area"
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.45 }}
+        className="absolute bottom-24 md:bottom-6 right-4 z-10 flex flex-col gap-2 items-end"
+      >
+        <button
+          id="map-fab-info"
+          onClick={() => setShowMapControls((v) => !v)}
+          className="w-12 h-12 bg-white border border-gray-200 rounded-2xl shadow-lg flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-all hover:shadow-xl active:scale-95"
+          aria-label="Map legend"
+        >
+          <Info className="w-5 h-5" />
+        </button>
+      </motion.div>
+
+      {/* Map legend / key */}
+      <AnimatePresence>
+        {showMapControls && (
+          <motion.div
+            id="map-legend"
+            initial={{ opacity: 0, scale: 0.95, y: 8 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 8 }}
+            transition={{ duration: 0.18 }}
+            className="absolute bottom-40 md:bottom-20 right-4 z-10 bg-white rounded-2xl border border-gray-200 shadow-xl p-4 w-52"
+          >
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-bold text-gray-900">Map Legend</h3>
+              <button
+                id="close-legend-btn"
+                onClick={() => setShowMapControls(false)}
+                className="p-0.5 rounded hover:bg-gray-100 text-gray-400"
+                aria-label="Close legend"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div id="legend-lines" className="space-y-2">
+              {[
+                { color: '#EF4444', label: 'Red Line' },
+                { color: '#F59E0B', label: 'Gold Line' },
+                { color: '#0075BF', label: 'Blue Line' },
+                { color: '#16A34A', label: 'Green Line' },
+              ].map(({ color, label }) => (
+                <div key={label} className="flex items-center gap-2">
+                  <div className="w-4 h-2 rounded-full" style={{ backgroundColor: color }} />
+                  <span className="text-xs text-gray-600">{label}</span>
+                </div>
+              ))}
+              <div className="border-t border-gray-100 pt-2 mt-2 space-y-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 rounded-full bg-green-400 border-2 border-white shadow-sm" />
+                  <span className="text-xs text-gray-600">Station (Normal)</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 rounded-full bg-amber-400 border-2 border-white shadow-sm" />
+                  <span className="text-xs text-gray-600">Station (Busy)</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 rounded-full bg-red-500 border-2 border-white shadow-sm" />
+                  <span className="text-xs text-gray-600">Station (High demand)</span>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Station detail panel — slides up from bottom when a stop is selected */}
+      <AnimatePresence>
+        {selectedStop && (
+          <motion.div
+            id="station-detail-panel"
+            initial={{ y: '100%' }}
+            animate={{ y: 0 }}
+            exit={{ y: '100%' }}
+            transition={{ type: 'spring', damping: 28, stiffness: 300 }}
+            className="absolute bottom-0 left-0 right-0 z-20 bg-white rounded-t-3xl shadow-2xl border-t border-gray-200 pb-safe"
+            style={{ maxHeight: '55vh', overflowY: 'auto' }}
+          >
+            {/* Handle */}
+            <div className="flex justify-center pt-3 pb-1">
+              <div className="w-10 h-1 rounded-full bg-gray-300" />
+            </div>
+
+            <div id="station-panel-header" className="flex items-start justify-between px-5 pt-2 pb-3">
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center shadow-sm">
+                  <Train className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-base font-bold text-gray-900 leading-tight">
+                    {selectedStop.name}
+                  </h2>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    {selectedStop.routes.map((route) => (
+                      <span
+                        key={route}
+                        id={`panel-route-chip-${route}`}
+                        className={`text-[10px] font-bold px-2 py-0.5 rounded-full text-white ${
+                          route === 'RED' ? 'bg-red-500' :
+                          route === 'GOLD' ? 'bg-amber-500' :
+                          route === 'BLUE' ? 'bg-blue-600' : 'bg-green-600'
+                        }`}
+                      >
+                        {route}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <button
+                id="close-station-panel"
+                onClick={() => setSelectedStop(null)}
+                className="p-1.5 rounded-xl hover:bg-gray-100 text-gray-400 transition-colors"
+                aria-label="Close station panel"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Quick stats */}
+            <div id="station-panel-stats" className="grid grid-cols-3 gap-3 px-5 pb-4">
+              <div className="bg-gray-50 rounded-xl p-3 text-center">
+                <div
+                  id="station-demand-stat"
+                  className={`text-sm font-bold capitalize ${
+                    selectedStop.demandLevel === 'high' ? 'text-red-600' :
+                    selectedStop.demandLevel === 'medium' ? 'text-amber-600' : 'text-green-600'
+                  }`}
+                >
+                  {selectedStop.demandLevel}
+                </div>
+                <div className="text-[10px] text-gray-500 mt-0.5">Demand</div>
+              </div>
+              <div className="bg-gray-50 rounded-xl p-3 text-center">
+                <div id="station-passengers-stat" className="text-sm font-bold text-gray-800">
+                  {selectedStop.currentPassengers}
+                </div>
+                <div className="text-[10px] text-gray-500 mt-0.5">On platform</div>
+              </div>
+              <div className="bg-gray-50 rounded-xl p-3 text-center">
+                <div id="station-predicted-stat" className="text-sm font-bold text-blue-700">
+                  {selectedStop.predictedDemand}%
+                </div>
+                <div className="text-[10px] text-gray-500 mt-0.5">Predicted load</div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

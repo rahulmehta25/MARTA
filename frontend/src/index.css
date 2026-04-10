@@ -2,67 +2,70 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here.
 All colors MUST be HSL.
 */
 
 @layer base {
   :root {
-    /* MARTA Design System Colors */
-    --background: 0 0% 100%;
-    --foreground: 0 0% 0%;
+    /* MARTA Design System Colors — Light/civic theme */
+    --background: 210 20% 98%;
+    --foreground: 220 25% 10%;
 
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 0%;
+    --card-foreground: 220 25% 10%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 0%;
+    --popover-foreground: 220 25% 10%;
 
-    /* MARTA Blue as primary */
-    --primary: 207 100% 51%;
+    /* MARTA Blue #0075BF as primary */
+    --primary: 205 100% 37%;
     --primary-foreground: 0 0% 100%;
 
-    /* Light gray for secondary */
-    --secondary: 0 0% 96%;
-    --secondary-foreground: 0 0% 0%;
+    /* Light blue-gray for secondary */
+    --secondary: 210 20% 94%;
+    --secondary-foreground: 220 25% 20%;
 
-    --muted: 0 0% 96%;
-    --muted-foreground: 0 0% 45%;
+    --muted: 210 15% 95%;
+    --muted-foreground: 220 12% 46%;
 
-    --accent: 0 0% 96%;
-    --accent-foreground: 0 0% 0%;
+    /* Gold/amber accent */
+    --accent: 38 92% 50%;
+    --accent-foreground: 0 0% 100%;
 
     /* MARTA Red for destructive */
-    --destructive: 0 100% 60%;
+    --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 0 0% 90%;
-    --input: 0 0% 90%;
-    --ring: 207 100% 51%;
+    --border: 215 20% 88%;
+    --input: 215 20% 90%;
+    --ring: 205 100% 37%;
 
     --radius: 0.75rem;
 
-    /* MARTA Transit Colors */
-    --marta-blue: 207 100% 51%;
-    --marta-green: 141 100% 39%;
+    /* MARTA Transit Line Colors */
+    --marta-blue: 205 100% 37%;
+    --marta-gold: 38 92% 50%;
+    --marta-green: 141 72% 36%;
+    --marta-red: 0 84% 55%;
     --marta-orange: 36 100% 50%;
-    --marta-red: 0 100% 60%;
-    
+
     /* Transit Status Colors */
-    --high-demand: 0 100% 60%;
+    --high-demand: 0 84% 55%;
     --medium-demand: 36 100% 50%;
-    --low-demand: 141 100% 39%;
-    --optimal: 207 100% 51%;
-    
+    --low-demand: 141 72% 36%;
+    --optimal: 205 100% 37%;
+
     /* Map Theme */
     --map-background: 0 0% 98%;
     --map-overlay: 0 0% 0%;
     --map-overlay-foreground: 0 0% 100%;
-    
+
     /* Gradients */
     --gradient-demand: linear-gradient(135deg, hsl(var(--high-demand)), hsl(var(--medium-demand)));
-    --gradient-primary: linear-gradient(135deg, hsl(var(--marta-blue)), hsl(var(--marta-blue) / 0.8));
+    --gradient-primary: linear-gradient(135deg, hsl(205 100% 37%), hsl(205 100% 45%));
     --gradient-overlay: linear-gradient(180deg, transparent, hsl(var(--background) / 0.8));
+    --gradient-header: linear-gradient(135deg, hsl(205 100% 34%), hsl(205 100% 40%));
 
     /* Animations */
     --animation-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
@@ -70,46 +73,48 @@ All colors MUST be HSL.
     --animation-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 
     /* Shadows */
-    --shadow-sm: 0 1px 2px 0 hsl(var(--foreground) / 0.05);
-    --shadow-md: 0 4px 6px -1px hsl(var(--foreground) / 0.1), 0 2px 4px -1px hsl(var(--foreground) / 0.06);
-    --shadow-lg: 0 10px 15px -3px hsl(var(--foreground) / 0.1), 0 4px 6px -2px hsl(var(--foreground) / 0.05);
-    --shadow-transit: 0 8px 25px -8px hsl(var(--marta-blue) / 0.3);
+    --shadow-sm: 0 1px 3px 0 hsl(220 25% 10% / 0.08);
+    --shadow-md: 0 4px 12px -2px hsl(220 25% 10% / 0.12);
+    --shadow-lg: 0 8px 24px -4px hsl(220 25% 10% / 0.14);
+    --shadow-xl: 0 20px 40px -8px hsl(220 25% 10% / 0.16);
+    --shadow-transit: 0 8px 25px -8px hsl(205 100% 37% / 0.35);
   }
 
   .dark {
-    --background: 0 0% 6%;
-    --foreground: 0 0% 98%;
+    --background: 220 20% 8%;
+    --foreground: 210 15% 95%;
 
-    --card: 0 0% 9%;
-    --card-foreground: 0 0% 98%;
+    --card: 220 18% 12%;
+    --card-foreground: 210 15% 95%;
 
-    --popover: 0 0% 9%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 220 18% 12%;
+    --popover-foreground: 210 15% 95%;
 
-    --primary: 207 100% 51%;
+    --primary: 205 100% 45%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 0 0% 14%;
-    --secondary-foreground: 0 0% 98%;
+    --secondary: 220 15% 18%;
+    --secondary-foreground: 210 15% 90%;
 
-    --muted: 0 0% 14%;
-    --muted-foreground: 0 0% 63%;
+    --muted: 220 15% 16%;
+    --muted-foreground: 210 10% 55%;
 
-    --accent: 0 0% 14%;
-    --accent-foreground: 0 0% 98%;
+    --accent: 38 92% 50%;
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 100% 60%;
+    --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 0 0% 16%;
-    --input: 0 0% 16%;
-    --ring: 207 100% 51%;
-    
+    --border: 220 15% 20%;
+    --input: 220 15% 18%;
+    --ring: 205 100% 45%;
+
+
     /* Dark theme map */
-    --map-background: 0 0% 9%;
+    --map-background: 220 18% 10%;
     --map-overlay: 0 0% 100%;
     --map-overlay-foreground: 0 0% 0%;
-    
+
     --gradient-overlay: linear-gradient(180deg, transparent, hsl(var(--background) / 0.9));
   }
 }
@@ -120,129 +125,174 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground font-sans;
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    @apply bg-background text-foreground font-sans antialiased;
+    font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', system-ui, sans-serif;
   }
 
+  /* Focus styles for accessibility */
+  :focus-visible {
+    @apply outline-none ring-2 ring-primary ring-offset-2;
+  }
+
+  /* Smooth scrolling */
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+@layer components {
   /* Transit-specific utility classes */
   .transit-card {
     @apply bg-card border border-border rounded-xl shadow-sm hover:shadow-md transition-all duration-300;
   }
 
+  .line-chip-red {
+    @apply bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full;
+  }
+  .line-chip-gold {
+    @apply bg-amber-500 text-white text-xs font-bold px-2 py-0.5 rounded-full;
+  }
+  .line-chip-blue {
+    @apply bg-blue-500 text-white text-xs font-bold px-2 py-0.5 rounded-full;
+  }
+  .line-chip-green {
+    @apply bg-green-600 text-white text-xs font-bold px-2 py-0.5 rounded-full;
+  }
+
+  .status-operational {
+    @apply text-green-700 bg-green-50 border border-green-200;
+  }
+  .status-delayed {
+    @apply text-amber-700 bg-amber-50 border border-amber-200;
+  }
+  .status-disrupted {
+    @apply text-red-700 bg-red-50 border border-red-200;
+  }
+
   .demand-high {
-    @apply text-red-600 bg-red-50 border-red-200 dark:bg-red-950/20 dark:border-red-800;
+    @apply text-red-700 bg-red-50 border-red-200;
   }
-
   .demand-medium {
-    @apply text-orange-600 bg-orange-50 border-orange-200 dark:bg-orange-950/20 dark:border-orange-800;
+    @apply text-amber-700 bg-amber-50 border-amber-200;
   }
-
   .demand-low {
-    @apply text-green-600 bg-green-50 border-green-200 dark:bg-green-950/20 dark:border-green-800;
+    @apply text-green-700 bg-green-50 border-green-200;
   }
-
   .route-optimal {
-    @apply text-blue-600 bg-blue-50 border-blue-200 dark:bg-blue-950/20 dark:border-blue-800;
+    @apply text-blue-700 bg-blue-50 border-blue-200;
   }
 
-  /* Enhanced map controls */
+  /* Arrival time urgency */
+  .arrival-arriving {
+    @apply text-red-600 font-bold;
+  }
+  .arrival-soon {
+    @apply text-amber-600 font-bold;
+  }
+  .arrival-normal {
+    @apply text-gray-800 font-semibold;
+  }
+
+  /* Map controls */
   .mapboxgl-ctrl-group {
-    @apply bg-card/95 backdrop-blur-sm border border-border/50 rounded-xl shadow-lg;
+    @apply bg-white/95 backdrop-blur-sm border border-gray-200 rounded-xl shadow-lg !important;
   }
-
   .mapboxgl-ctrl-group button {
-    @apply bg-transparent hover:bg-secondary/80 border-b border-border/30 last:border-b-0 transition-all duration-300;
+    @apply bg-transparent hover:bg-gray-50 border-b border-gray-100 last:border-b-0 transition-colors !important;
   }
-
   .mapboxgl-popup-content {
-    @apply bg-card border border-border rounded-xl shadow-xl p-0 overflow-hidden;
+    @apply bg-white border border-gray-200 rounded-xl shadow-xl p-0 overflow-hidden !important;
   }
 
-  .mapboxgl-popup-tip {
-    @apply border-t-card;
+  /* Glass morphism */
+  .glass {
+    @apply bg-white/80 backdrop-blur-md border border-white/60 shadow-sm;
+  }
+  .glass-strong {
+    @apply bg-white/95 backdrop-blur-lg border border-gray-200/80 shadow-md;
   }
 
-  /* Enhanced transition utilities */
+  /* Transition utilities */
   .transition-smooth {
     transition: all var(--animation-smooth);
   }
-
   .transition-fast {
     transition: all var(--animation-fast);
   }
+}
 
-  /* Glass morphism effects */
-  .glass {
-    @apply bg-white/10 backdrop-blur-md border border-white/20;
-  }
-
-  .glass-dark {
-    @apply bg-black/10 backdrop-blur-md border border-white/10;
-  }
-
-  /* Pulse animations for high demand areas */
-  .demand-pulse {
-    animation: demand-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-  }
-
-  @keyframes demand-pulse {
-    0%, 100% {
-      opacity: 1;
-      transform: scale(1);
-    }
-    50% {
-      opacity: 0.7;
-      transform: scale(1.1);
-    }
-  }
-
+@layer utilities {
   /* Shimmer loading effect */
   .shimmer {
-    background: linear-gradient(90deg, 
-      hsl(var(--muted)) 0%, 
-      hsl(var(--muted-foreground) / 0.1) 50%, 
-      hsl(var(--muted)) 100%);
+    background: linear-gradient(
+      90deg,
+      hsl(var(--muted)) 0%,
+      hsl(210 15% 88%) 50%,
+      hsl(var(--muted)) 100%
+    );
     background-size: 200% 100%;
     animation: shimmer 1.5s infinite;
   }
 
-  @keyframes shimmer {
-    0% {
-      background-position: -200% 0;
-    }
-    100% {
-      background-position: 200% 0;
-    }
+  /* Pulse for approaching vehicles */
+  .arrival-pulse {
+    animation: arrival-pulse 1.4s ease-in-out infinite;
   }
 
-  /* Floating animation for important elements */
-  .float {
-    animation: float 3s ease-in-out infinite;
+  /* Demand pulse */
+  .demand-pulse {
+    animation: demand-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   }
 
-  @keyframes float {
-    0%, 100% {
-      transform: translateY(0px);
-    }
-    50% {
-      transform: translateY(-4px);
-    }
+  .glow-primary {
+    box-shadow: 0 0 20px hsl(205 100% 37% / 0.3);
   }
-
-  /* Glow effects for active states */
-  .glow {
-    box-shadow: 0 0 20px hsl(var(--primary) / 0.3);
-  }
-
   .glow-success {
-    box-shadow: 0 0 20px hsl(var(--marta-green) / 0.4);
+    box-shadow: 0 0 20px hsl(141 72% 36% / 0.4);
   }
-
   .glow-warning {
-    box-shadow: 0 0 20px hsl(var(--marta-orange) / 0.4);
+    box-shadow: 0 0 20px hsl(38 92% 50% / 0.4);
   }
-
   .glow-danger {
-    box-shadow: 0 0 20px hsl(var(--marta-red) / 0.4);
+    box-shadow: 0 0 20px hsl(0 84% 55% / 0.4);
   }
+}
+
+/* Keyframes */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes arrival-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.4); }
+}
+
+@keyframes demand-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.1); }
+}
+
+@keyframes slide-up {
+  from { transform: translateY(100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes count-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.06); }
+}
+
+/* Safe area insets for mobile */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.pt-safe {
+  padding-top: env(safe-area-inset-top, 0px);
 }
