@@ -84,7 +84,7 @@ export interface AppActions {
 
 export const useAppStore = create<AppState & AppActions>((set, get) => ({
   // Initial state
-  mapStyle: 'light',
+  mapStyle: 'dark',
   selectedStop: null,
   selectedRoute: null,
   showDemandHeatmap: true,

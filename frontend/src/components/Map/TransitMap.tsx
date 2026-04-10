@@ -7,8 +7,8 @@ import { martaStops, martaRoutes } from '@/data/martaData';
 import { useWebSocket } from '@/hooks/useWebSocket';
 import { useToast } from '@/components/ui/use-toast';
 
-// Get Mapbox token from environment variable
-const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN || 'pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw';
+// Get Mapbox token from environment variable (required - set VITE_MAPBOX_TOKEN in .env)
+const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN || '';
 
 interface TransitMapProps {
   className?: string;
@@ -125,11 +125,11 @@ export const TransitMap: React.FC<TransitMapProps> = ({ className }) => {
   const getMapStyle = () => {
     switch (mapStyle) {
       case 'dark':
-        return 'mapbox://styles/mapbox/dark-v10';
+        return 'mapbox://styles/mapbox/dark-v11';
       case 'satellite':
-        return 'mapbox://styles/mapbox/satellite-v9';
+        return 'mapbox://styles/mapbox/satellite-streets-v12';
       default:
-        return 'mapbox://styles/mapbox/light-v10';
+        return 'mapbox://styles/mapbox/light-v11';
     }
   };
 

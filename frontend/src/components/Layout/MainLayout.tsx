@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { TransitMap } from '@/components/Map/TransitMap';
 import { SearchBar } from '@/components/Search/SearchBar';
 import { BottomDrawer } from '@/components/Drawer/BottomDrawer';
+import { LiveArrivalsBar } from '@/components/RealTime/LiveArrivalsBar';
 import { useAppStore } from '@/store';
 import { Settings, Layers, Satellite, Sun, Moon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -165,6 +166,9 @@ export const MainLayout: React.FC = () => {
           </div>
         </div>
       </header>
+
+      {/* Live Arrivals Ticker */}
+      <LiveArrivalsBar />
 
       {/* Main Content */}
       <div className="flex-1 relative overflow-hidden">
