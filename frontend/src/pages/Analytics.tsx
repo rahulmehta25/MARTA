@@ -3,13 +3,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrivalBoard } from '@/components/RealTime/ArrivalBoard';
 import { TripPlanner } from '@/components/TripPlanning/TripPlanner';
 import { PerformanceDashboard } from '@/components/Analytics/PerformanceDashboard';
-import { 
-  Train, 
-  Navigation, 
-  BarChart3, 
+import {
+  Train,
+  Navigation,
+  BarChart3,
   Activity,
   Map,
-  Clock
+  Clock,
+  ArrowLeft
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -26,39 +27,40 @@ const Analytics: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div id="analytics-page" className="min-h-screen bg-background">
       {/* Header */}
-      <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-background border-b">
-        <div className="container mx-auto px-4 py-6">
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex items-center justify-between"
-          >
+      <header id="analytics-header" className="bg-gradient-to-r from-primary/10 via-primary/5 to-background border-b" role="banner">
+        <div className="container mx-auto px-4 py-4 sm:py-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-                MARTA Analytics Platform
-              </h1>
-              <p className="text-muted-foreground mt-1">
+              <div className="flex items-center gap-3">
+                <a href="/" className="text-muted-foreground hover:text-foreground transition-colors" aria-label="Back to map">
+                  <ArrowLeft className="h-5 w-5" aria-hidden="true" />
+                </a>
+                <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
+                  MARTA Analytics
+                </h1>
+              </div>
+              <p className="text-sm text-muted-foreground mt-1 ml-8">
                 Real-time tracking, ML predictions, and performance insights
               </p>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="flex items-center gap-2 px-3 py-1.5 bg-green-500/10 border border-green-500/20 rounded-lg">
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+            <div className="flex items-center gap-2 ml-8 sm:ml-0">
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-green-500/10 border border-green-500/20 rounded-lg" role="status">
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" aria-hidden="true" />
                 <span className="text-sm font-medium text-green-600">Live Data</span>
               </div>
-              <div className="flex items-center gap-2 px-3 py-1.5 bg-purple-500/10 border border-purple-500/20 rounded-lg">
-                <Activity className="h-4 w-4 text-purple-600" />
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-purple-500/10 border border-purple-500/20 rounded-lg" role="status">
+                <Activity className="h-4 w-4 text-purple-600" aria-hidden="true" />
                 <span className="text-sm font-medium text-purple-600">ML Active</span>
               </div>
             </div>
-          </motion.div>
+          </div>
         </div>
-      </div>
+      </header>
 
       {/* Main Content */}
-      <div className="container mx-auto px-4 py-8">
+      <main id="analytics-content" className="container mx-auto px-4 py-6 sm:py-8" role="main">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="grid w-full max-w-2xl mx-auto grid-cols-3">
             <TabsTrigger value="realtime" className="flex items-center gap-2">
@@ -86,20 +88,20 @@ const Analytics: React.FC = () => {
               transition={{ duration: 0.3 }}
             >
               {/* Quick Station Selection */}
-              <div className="mb-6">
+              <div id="popular-stations" className="mb-6">
                 <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
-                  <Map className="h-5 w-5" />
+                  <Map className="h-5 w-5" aria-hidden="true" />
                   Popular Stations
                 </h2>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-2" role="group" aria-label="Quick station selection">
                   {popularStations.map((station) => (
                     <button
                       key={station}
-                      className="px-4 py-2 text-sm bg-secondary hover:bg-secondary/80 rounded-lg transition-colors"
+                      className="px-4 py-2 text-sm bg-secondary hover:bg-secondary/80 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 touch-target"
                       onClick={() => {
-                        // In a real app, this would update the ArrivalBoard station
                         console.log('Selected station:', station);
                       }}
+                      aria-label={`View arrivals at ${station.replace(' STATION', '')}`}
                     >
                       {station.replace(' STATION', '')}
                     </button>
@@ -185,7 +187,7 @@ const Analytics: React.FC = () => {
             </motion.div>
           </TabsContent>
         </Tabs>
-      </div>
+      </main>
     </div>
   );
 };

@@ -158,11 +158,31 @@ export const ArrivalBoard: React.FC<ArrivalBoardProps> = ({
 
   if (loading && arrivals.length === 0) {
     return (
-      <Card className="w-full">
-        <CardContent className="p-6">
-          <div className="flex items-center justify-center space-x-2">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
-            <span>Loading arrivals...</span>
+      <Card id={`arrival-board-loading-${stationId.replace(/\s+/g, '-').toLowerCase()}`} className="w-full">
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="skeleton h-5 w-5 rounded" />
+              <div className="skeleton h-5 w-40 rounded" />
+            </div>
+            <div className="skeleton h-4 w-24 rounded" />
+          </div>
+        </CardHeader>
+        <CardContent className="p-0">
+          <div className="divide-y divide-border" role="status" aria-label="Loading arrivals">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="p-4 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="skeleton w-3 h-12 rounded-full" />
+                  <div className="space-y-2">
+                    <div className="skeleton h-4 w-32 rounded" />
+                    <div className="skeleton h-3 w-20 rounded" />
+                  </div>
+                </div>
+                <div className="skeleton h-8 w-16 rounded" />
+              </div>
+            ))}
+            <span className="sr-only">Loading arrival times...</span>
           </div>
         </CardContent>
       </Card>
@@ -171,11 +191,20 @@ export const ArrivalBoard: React.FC<ArrivalBoardProps> = ({
 
   if (error) {
     return (
-      <Card className="w-full border-red-200">
-        <CardContent className="p-6">
-          <div className="flex items-center space-x-2 text-red-500">
-            <AlertCircle className="h-5 w-5" />
-            <span>{error}</span>
+      <Card id={`arrival-board-error-${stationId.replace(/\s+/g, '-').toLowerCase()}`} className="w-full border-destructive/30">
+        <CardContent className="p-6" role="alert">
+          <div className="flex flex-col items-center gap-3 text-center">
+            <AlertCircle className="h-8 w-8 text-destructive" aria-hidden="true" />
+            <div>
+              <p className="font-medium text-destructive mb-1">Unable to load arrivals</p>
+              <p className="text-sm text-muted-foreground">{error}</p>
+            </div>
+            <button
+              onClick={fetchArrivals}
+              className="mt-2 px-4 py-2 text-sm bg-secondary hover:bg-secondary/80 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+            >
+              Try again
+            </button>
           </div>
         </CardContent>
       </Card>
@@ -183,36 +212,36 @@ export const ArrivalBoard: React.FC<ArrivalBoardProps> = ({
   }
 
   return (
-    <Card className="w-full">
+    <Card id={`arrival-board-${stationId.replace(/\s+/g, '-').toLowerCase()}`} className="w-full">
       <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-lg font-semibold flex items-center gap-2">
-            <Train className="h-5 w-5" />
-            {stationId}
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <CardTitle className="text-base sm:text-lg font-semibold flex items-center gap-2">
+            <Train className="h-5 w-5 flex-shrink-0" aria-hidden="true" />
+            <span className="truncate">{stationId}</span>
           </CardTitle>
           <div className="flex items-center gap-3 text-sm text-muted-foreground">
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1" role="status" aria-label={isConnected ? 'Connected - live data' : 'Disconnected'}>
               {isConnected ? (
                 <>
-                  <Wifi className="h-4 w-4 text-green-500" />
-                  <span className="text-green-500">Live</span>
+                  <Wifi className="h-4 w-4 text-green-500" aria-hidden="true" />
+                  <span className="text-green-600">Live</span>
                 </>
               ) : (
                 <>
-                  <WifiOff className="h-4 w-4" />
+                  <WifiOff className="h-4 w-4" aria-hidden="true" />
                   <span>Offline</span>
                 </>
               )}
             </div>
             <div className="flex items-center gap-1">
-              <Clock className="h-4 w-4" />
-              {lastUpdate.toLocaleTimeString()}
+              <Clock className="h-4 w-4" aria-hidden="true" />
+              <time dateTime={lastUpdate.toISOString()}>{lastUpdate.toLocaleTimeString()}</time>
             </div>
           </div>
         </div>
       </CardHeader>
       <CardContent className="p-0">
-        <div className="divide-y divide-border">
+        <div className="divide-y divide-border" role="list" aria-label={`Arrivals at ${stationId}`}>
           <AnimatePresence mode="popLayout">
             {arrivals.map((arrival, index) => (
               <motion.div
@@ -222,17 +251,18 @@ export const ArrivalBoard: React.FC<ArrivalBoardProps> = ({
                 exit={{ opacity: 0, x: 20 }}
                 transition={{ delay: index * 0.05 }}
                 className="p-4 hover:bg-secondary/50 transition-colors"
+                role="listitem"
               >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
                     {/* Line indicator */}
-                    <div className={`w-3 h-12 rounded-full ${getLineColor(arrival.line)}`} />
-                    
+                    <div className={`w-3 h-12 rounded-full flex-shrink-0 ${getLineColor(arrival.line)}`} aria-hidden="true" />
+
                     {/* Arrival info */}
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium">{arrival.destination}</span>
-                        <Badge variant="outline" className="text-xs">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-medium truncate">{arrival.destination}</span>
+                        <Badge variant="outline" className="text-xs flex-shrink-0">
                           {arrival.direction}
                         </Badge>
                       </div>
@@ -240,24 +270,24 @@ export const ArrivalBoard: React.FC<ArrivalBoardProps> = ({
                         <span className="text-sm text-muted-foreground">
                           {arrival.line} Line
                         </span>
-                        <span className={`text-xs ${getDelayStatus(arrival.delay).color}`}>
+                        <span className={`text-xs font-medium ${getDelayStatus(arrival.delay).color}`}>
                           {getDelayStatus(arrival.delay).text}
                         </span>
                       </div>
                     </div>
                   </div>
-                  
+
                   {/* Timing */}
-                  <div className="text-right">
-                    <div className="text-2xl font-bold">
+                  <div className="text-right flex-shrink-0">
+                    <div className="text-xl sm:text-2xl font-bold tabular-nums">
                       {formatTime(arrival.waiting_seconds)}
                     </div>
                     {arrival.predicted_seconds && (
-                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                        <TrendingUp className="h-3 w-3" />
+                      <div className="flex items-center gap-1 text-xs text-muted-foreground justify-end">
+                        <TrendingUp className="h-3 w-3" aria-hidden="true" />
                         <span>ML: {formatTime(arrival.predicted_seconds)}</span>
                         {arrival.confidence && (
-                          <span className="text-xs">
+                          <span>
                             ({Math.round(arrival.confidence * 100)}%)
                           </span>
                         )}
@@ -268,9 +298,9 @@ export const ArrivalBoard: React.FC<ArrivalBoardProps> = ({
               </motion.div>
             ))}
           </AnimatePresence>
-          
+
           {arrivals.length === 0 && (
-            <div className="p-8 text-center text-muted-foreground">
+            <div className="p-8 text-center text-muted-foreground" role="listitem">
               No arrivals scheduled for this station
             </div>
           )}

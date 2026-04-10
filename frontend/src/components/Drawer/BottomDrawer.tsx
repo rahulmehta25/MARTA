@@ -5,7 +5,7 @@ import { OverviewTab } from './tabs/OverviewTab';
 import { DemandTab } from './tabs/DemandTab';
 import { OptimizationTab } from './tabs/OptimizationTab';
 import { AnalyticsTab } from './tabs/AnalyticsTab';
-import { GripHorizontal } from 'lucide-react';
+import { GripHorizontal, Layers } from 'lucide-react';
 
 const TABS = [
   { id: 'overview', label: 'Overview' },
@@ -84,23 +84,35 @@ export const BottomDrawer: React.FC = () => {
           }}
           className="bg-card border-t border-border rounded-t-2xl shadow-2xl pointer-events-auto overflow-hidden"
           style={{ height: drawerHeight }}
+          role="dialog"
+          aria-label="Data panel"
+          aria-hidden={!drawerOpen}
         >
           {/* Handle */}
-          <div className="flex justify-center py-3 bg-secondary/50 cursor-grab active:cursor-grabbing">
-            <GripHorizontal className="w-8 h-6 text-muted-foreground" />
+          <div
+            id="drawer-handle"
+            className="flex justify-center py-3 bg-secondary/50 cursor-grab active:cursor-grabbing touch-target"
+            role="separator"
+            aria-label="Drag to resize panel"
+          >
+            <GripHorizontal className="w-8 h-6 text-muted-foreground" aria-hidden="true" />
           </div>
 
           {/* Tab Navigation */}
-          <div className="flex border-b border-border bg-card">
+          <div id="drawer-tabs" className="flex border-b border-border bg-card" role="tablist" aria-label="Data views">
             {TABS.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex-1 px-4 py-3 text-sm font-medium transition-colors relative ${
+                className={`flex-1 px-3 sm:px-4 py-3 text-xs sm:text-sm font-medium transition-colors relative touch-target ${
                   activeTab === tab.id
                     ? 'text-primary'
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
+                role="tab"
+                aria-selected={activeTab === tab.id}
+                aria-controls={`tabpanel-${tab.id}`}
+                id={`tab-${tab.id}`}
               >
                 {tab.label}
                 {activeTab === tab.id && (
@@ -115,7 +127,12 @@ export const BottomDrawer: React.FC = () => {
           </div>
 
           {/* Tab Content */}
-          <div className="flex-1 overflow-y-auto">
+          <div
+            className="flex-1 overflow-y-auto"
+            role="tabpanel"
+            id={`tabpanel-${activeTab}`}
+            aria-labelledby={`tab-${activeTab}`}
+          >
             {renderTabContent()}
           </div>
         </motion.div>
@@ -124,18 +141,14 @@ export const BottomDrawer: React.FC = () => {
       {/* Toggle button when drawer is closed */}
       {!drawerOpen && (
         <motion.button
+          id="drawer-toggle"
           initial={{ y: 100 }}
           animate={{ y: 0 }}
           onClick={() => setDrawerOpen(true)}
-          className="fixed bottom-6 right-6 z-50 bg-primary text-primary-foreground rounded-full p-4 shadow-lg hover:shadow-xl transition-shadow"
+          className="fixed bottom-6 right-6 z-50 bg-primary text-primary-foreground rounded-full w-14 h-14 flex items-center justify-center shadow-lg hover:shadow-xl hover:bg-primary/90 transition-all focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+          aria-label="Open data panel"
         >
-          <motion.div
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.95 }}
-            className="text-xl"
-          >
-            📊
-          </motion.div>
+          <Layers className="w-5 h-5" aria-hidden="true" />
         </motion.button>
       )}
     </>

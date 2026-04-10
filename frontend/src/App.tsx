@@ -9,6 +9,7 @@ import Analytics from "./pages/Analytics";
 import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
 import { InstallPrompt } from "./components/PWA/InstallPrompt";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 
 const queryClient = new QueryClient();
 
@@ -20,7 +21,7 @@ const App = () => {
         .register('/service-worker.js')
         .then((registration) => {
           console.log('ServiceWorker registered:', registration);
-          
+
           // Check for updates
           registration.addEventListener('updatefound', () => {
             const newWorker = registration.installing;
@@ -37,7 +38,7 @@ const App = () => {
           console.error('ServiceWorker registration failed:', error);
         });
     }
-    
+
     // Request notification permission
     if ('Notification' in window && Notification.permission === 'default') {
       // Wait for user interaction before requesting
@@ -50,22 +51,24 @@ const App = () => {
   }, []);
 
   return (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/analytics" element={<Analytics />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-        <InstallPrompt />
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
+  <ErrorBoundary>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/analytics" element={<Analytics />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+          <InstallPrompt />
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  </ErrorBoundary>
   );
 };
 

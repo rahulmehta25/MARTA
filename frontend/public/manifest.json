@@ -1,0 +1,26 @@
+{
+  "name": "MARTA Analytics",
+  "short_name": "MARTA",
+  "description": "Real-time MARTA transit tracking with ML predictions, trip planning, and performance analytics",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0078d4",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/marta-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/marta-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "categories": ["transportation", "utilities"],
+  "lang": "en-US"
+}

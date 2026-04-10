@@ -35,144 +35,121 @@ export const MainLayout: React.FC = () => {
   }, [fetchStops, fetchRoutes, setConnected]);
 
   return (
-    <div className="h-screen flex flex-col bg-background overflow-hidden">
-      {/* Enhanced Header */}
-      <header className="flex-shrink-0 bg-gradient-to-r from-card via-card to-card/95 backdrop-blur-sm border-b border-border/50 shadow-lg z-20">
-        <div className="flex items-center justify-between px-6 py-4">
-          <div className="flex items-center gap-6">
-            <div className="flex items-center gap-3">
-              <motion.div 
-                className="w-10 h-10 bg-gradient-primary rounded-xl flex items-center justify-center shadow-lg"
-                whileHover={{ scale: 1.05, rotate: 5 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <span className="text-white font-bold text-lg">M</span>
-              </motion.div>
-              <div>
-                <h1 className="text-xl font-bold bg-gradient-to-r from-foreground to-muted-foreground bg-clip-text text-transparent">
+    <div id="main-layout" className="h-screen flex flex-col bg-background overflow-hidden">
+      {/* Header */}
+      <header id="main-header" className="flex-shrink-0 bg-card/95 backdrop-blur-sm border-b border-border/50 shadow-sm z-20" role="banner">
+        <div className="flex items-center justify-between px-3 sm:px-6 py-3 sm:py-4 gap-2">
+          <div className="flex items-center gap-3 sm:gap-6 min-w-0">
+            <a href="/" className="flex items-center gap-2 sm:gap-3 min-w-0" aria-label="MARTA Analytics home">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 bg-gradient-primary rounded-xl flex items-center justify-center shadow-md flex-shrink-0">
+                <span className="text-white font-bold text-base sm:text-lg" aria-hidden="true">M</span>
+              </div>
+              <div className="min-w-0 hidden xs:block">
+                <h1 className="text-lg sm:text-xl font-bold text-foreground truncate">
                   MARTA Analytics
                 </h1>
-                <p className="text-xs text-muted-foreground">Demand Forecasting & Route Optimization</p>
+                <p className="text-xs text-muted-foreground hidden sm:block">Demand Forecasting & Route Optimization</p>
               </div>
-            </div>
+            </a>
 
-            {/* Quick Stats */}
-            <div className="hidden md:flex items-center gap-4 ml-8">
+            {/* Quick Stats - hidden on small screens */}
+            <div id="header-quick-stats" className="hidden lg:flex items-center gap-3 ml-4">
               <div className="flex items-center gap-2 px-3 py-1.5 bg-marta-green/10 border border-marta-green/20 rounded-lg">
-                <div className="w-2 h-2 bg-marta-green rounded-full animate-pulse"></div>
+                <div className="w-2 h-2 bg-marta-green rounded-full animate-pulse" aria-hidden="true"></div>
                 <span className="text-sm font-medium text-marta-green">System Active</span>
               </div>
               <div className="flex items-center gap-2 px-3 py-1.5 bg-marta-orange/10 border border-marta-orange/20 rounded-lg">
                 <span className="text-sm font-medium text-marta-orange">Real-time Data</span>
               </div>
-              <div className="flex items-center gap-2 px-3 py-1.5 bg-marta-blue/10 border border-marta-blue/20 rounded-lg">
-                <span className="text-sm font-medium text-marta-blue">AI Optimized</span>
-              </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
-            {/* Connection Status with Animation */}
-            <motion.div 
-              className="flex items-center gap-2 px-4 py-2 bg-secondary/50 backdrop-blur-sm rounded-xl border border-border/50"
-              animate={{ 
-                borderColor: isConnected ? 'hsl(var(--marta-green) / 0.3)' : 'hsl(var(--marta-red) / 0.3)'
-              }}
-              transition={{ duration: 2, repeat: Infinity, repeatType: 'reverse' }}
+          <nav id="header-controls" className="flex items-center gap-1.5 sm:gap-3 flex-shrink-0" aria-label="Map controls">
+            {/* Connection Status */}
+            <div
+              id="connection-status"
+              className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-secondary/50 rounded-lg border border-border/50"
+              role="status"
+              aria-live="polite"
+              aria-label={isConnected ? 'Connected - receiving live data' : 'Disconnected - reconnecting'}
             >
-              <motion.div 
-                className={`w-2 h-2 rounded-full ${isConnected ? 'bg-marta-green' : 'bg-marta-red'}`}
-                animate={{ scale: [1, 1.2, 1] }}
-                transition={{ duration: 1.5, repeat: Infinity }}
-              />
+              <div className={`w-2 h-2 rounded-full flex-shrink-0 ${isConnected ? 'bg-marta-green' : 'bg-marta-red'} animate-pulse`} aria-hidden="true" />
               <span className="text-sm font-medium">
-                {isConnected ? 'Live Data' : 'Reconnecting...'}
+                {isConnected ? 'Live' : 'Offline'}
               </span>
-            </motion.div>
+            </div>
 
-            {/* Enhanced Map Controls */}
-            <div className="flex items-center gap-1 bg-secondary/50 backdrop-blur-sm rounded-xl p-1 border border-border/50">
+            {/* Map Style Controls */}
+            <div id="map-style-controls" className="hidden sm:flex items-center gap-0.5 bg-secondary/50 rounded-lg p-0.5 border border-border/50" role="radiogroup" aria-label="Map style">
               {[
-                { style: 'light', icon: Sun, label: 'Light' },
-                { style: 'dark', icon: Moon, label: 'Dark' },
-                { style: 'satellite', icon: Satellite, label: 'Satellite' }
+                { style: 'light', icon: Sun, label: 'Light map' },
+                { style: 'dark', icon: Moon, label: 'Dark map' },
+                { style: 'satellite', icon: Satellite, label: 'Satellite map' }
               ].map(({ style, icon: Icon, label }) => (
                 <Button
                   key={style}
                   variant={mapStyle === style ? 'default' : 'ghost'}
                   size="sm"
                   onClick={() => setMapStyle(style as any)}
-                  className={`h-8 px-3 transition-all duration-300 ${
-                    mapStyle === style 
-                      ? 'bg-primary text-primary-foreground shadow-md' 
+                  className={`h-8 w-8 p-0 transition-colors ${
+                    mapStyle === style
+                      ? 'bg-primary text-primary-foreground shadow-sm'
                       : 'hover:bg-secondary/80'
                   }`}
-                  title={label}
+                  aria-label={label}
+                  aria-pressed={mapStyle === style}
+                  role="radio"
+                  aria-checked={mapStyle === style}
                 >
-                  <Icon className="w-4 h-4" />
+                  <Icon className="w-4 h-4" aria-hidden="true" />
                 </Button>
               ))}
             </div>
 
-            {/* Enhanced Heatmap Toggle */}
+            {/* Heatmap Toggle */}
             <Button
+              id="heatmap-toggle"
               variant={showDemandHeatmap ? 'default' : 'outline'}
               size="sm"
               onClick={toggleDemandHeatmap}
-              className={`flex items-center gap-2 transition-all duration-300 ${
-                showDemandHeatmap 
-                  ? 'bg-gradient-demand shadow-lg hover:shadow-xl' 
+              className={`h-8 transition-colors ${
+                showDemandHeatmap
+                  ? 'bg-primary text-primary-foreground'
                   : 'hover:bg-secondary/80'
               }`}
+              aria-label={showDemandHeatmap ? 'Hide demand heatmap' : 'Show demand heatmap'}
+              aria-pressed={showDemandHeatmap}
             >
-              <Layers className="w-4 h-4" />
-              <span className="hidden sm:inline">Heatmap</span>
-              {showDemandHeatmap && (
-                <motion.div
-                  className="w-1 h-1 bg-white rounded-full"
-                  animate={{ scale: [1, 1.5, 1] }}
-                  transition={{ duration: 1, repeat: Infinity }}
-                />
-              )}
+              <Layers className="w-4 h-4" aria-hidden="true" />
+              <span className="hidden sm:inline ml-1.5">Heatmap</span>
             </Button>
 
-            {/* Settings with Badge */}
-            <div className="relative">
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  className="hover:bg-secondary/80 transition-all duration-300"
-                  onClick={() => {
-                    // Toggle drawer with settings tab
-                    const store = useAppStore.getState();
-                    store.setActiveTab('optimization');
-                    store.toggleDrawer();
-                  }}
-                >
-                  <Settings className="w-4 h-4" />
-                </Button>
-              </motion.div>
-              <motion.div
-                className="absolute -top-1 -right-1 w-2 h-2 bg-marta-red rounded-full"
-                animate={{ scale: [1, 1.2, 1] }}
-                transition={{ duration: 2, repeat: Infinity }}
-              />
-            </div>
-          </div>
+            {/* Settings */}
+            <Button
+              id="settings-button"
+              variant="outline"
+              size="sm"
+              className="h-8 w-8 p-0 hover:bg-secondary/80 transition-colors"
+              onClick={() => {
+                const store = useAppStore.getState();
+                store.setActiveTab('optimization');
+                store.toggleDrawer();
+              }}
+              aria-label="Open settings"
+            >
+              <Settings className="w-4 h-4" aria-hidden="true" />
+            </Button>
+          </nav>
         </div>
       </header>
 
       {/* Main Content */}
-      <div className="flex-1 relative overflow-hidden">
+      <main id="main-content" className="flex-1 relative overflow-hidden" role="main">
         {/* Map */}
         <TransitMap className="absolute inset-0" />
 
         {/* Search Overlay */}
-        <div className="absolute top-6 left-6 z-10">
+        <div id="search-overlay" className="absolute top-4 left-4 right-4 sm:right-auto sm:top-6 sm:left-6 z-10">
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -184,7 +161,7 @@ export const MainLayout: React.FC = () => {
 
         {/* Bottom Drawer */}
         <BottomDrawer />
-      </div>
+      </main>
     </div>
   );
 };

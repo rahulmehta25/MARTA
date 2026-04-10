@@ -245,4 +245,72 @@ All colors MUST be HSL.
   .glow-danger {
     box-shadow: 0 0 20px hsl(var(--marta-red) / 0.4);
   }
+
+  /* Focus visible styles for keyboard navigation (WCAG AA) */
+  *:focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+  }
+
+  /* Remove default focus for mouse users */
+  *:focus:not(:focus-visible) {
+    outline: none;
+  }
+
+  /* Skip to content link for screen readers */
+  .skip-link {
+    @apply sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-lg focus:shadow-lg;
+  }
+
+  /* Skeleton loading placeholder */
+  .skeleton {
+    @apply bg-muted rounded animate-pulse;
+  }
+
+  /* Improved touch targets for mobile (WCAG 2.5.5 - min 44x44px) */
+  .touch-target {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  /* Reduced motion preference */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+
+    .demand-pulse,
+    .shimmer,
+    .float {
+      animation: none;
+    }
+  }
+
+  /* Smooth scroll for anchor links */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Better text rendering */
+  body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Ensure minimum contrast on interactive elements */
+  a:not([class]) {
+    color: hsl(var(--primary));
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  a:not([class]):hover {
+    color: hsl(var(--primary) / 0.8);
+  }
 }

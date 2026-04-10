@@ -147,17 +147,20 @@ export const SearchBar: React.FC = () => {
   const displayResults = searchQuery.length > 0 ? searchResults : recentSearches;
 
   return (
-    <div ref={containerRef} className="relative w-full max-w-md">
+    <div ref={containerRef} className="relative w-full max-w-md" role="combobox" aria-expanded={isOpen} aria-haspopup="listbox">
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground" aria-hidden="true" />
         <input
           ref={inputRef}
-          type="text"
-          placeholder="Search stops, routes, or addresses..."
+          type="search"
+          placeholder="Search stops, routes..."
           value={searchQuery}
           onChange={(e) => handleSearch(e.target.value)}
           onFocus={() => setIsOpen(true)}
-          className="w-full pl-10 pr-4 py-3 bg-card border border-border rounded-xl shadow-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-smooth"
+          className="w-full pl-10 pr-4 py-3 bg-card border border-border rounded-xl shadow-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors text-sm sm:text-base"
+          aria-label="Search stops, routes, or addresses"
+          aria-autocomplete="list"
+          id="search-input"
         />
       </div>
 
