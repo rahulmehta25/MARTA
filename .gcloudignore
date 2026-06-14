@@ -1,0 +1,9 @@
+node_modules/
+frontend/
+.git/
+*.md
+data/
+/models/
+notebooks/
+tests/
+*.ipynb
