@@ -1,0 +1,9 @@
+marta_env_tf/
+marta_env/
+frontend/
+frontend/node_modules/
+__pycache__/
+*.pyc
+.git/
+.venv/
+venv/
