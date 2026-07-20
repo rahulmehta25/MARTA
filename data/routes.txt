@@ -1,0 +1,119 @@
+route_id,agency_id,route_short_name,route_long_name,route_desc,route_type,route_url,route_color,route_text_color
+25511,MARTA,1,Marietta Blvd/Joseph E Lowery Blvd,,3,https://itsmarta.com/1.aspx,FF00FF,000000
+25512,MARTA,2,Ponce de Leon Avenue / Druid Hills,,3,https://itsmarta.com/2.aspx,008000,000000
+25513,MARTA,3,Martin Luther King Jr Dr/Auburn Ave,,3,https://itsmarta.com/3.aspx,FF8000,000000
+25514,MARTA,4,Moreland Avenue,,3,https://itsmarta.com/4.aspx,FF00FF,000000
+25515,MARTA,5,Piedmont Road / Sandy Springs,,3,https://itsmarta.com/5.aspx,00FFFF,000000
+25516,MARTA,6,Clifton Road / Emory,,3,https://itsmarta.com/6.aspx,008080,000000
+25517,MARTA,8,North Druid Hills Road,,3,https://itsmarta.com/8.aspx,008000,000000
+25518,MARTA,9,Boulevard / Tilson Road,,3,https://itsmarta.com/9.aspx,00FFFF,000000
+25519,MARTA,12,Howell Mill Road / Cumberland,,3,https://itsmarta.com/12.aspx,FF00FF,000000
+25520,MARTA,14,14th Street / Blandtown,,3,https://itsmarta.com/14.aspx,00FF00,000000
+25521,MARTA,15,Candler Road,,3,https://itsmarta.com/15.aspx,00FF00,000000
+25522,MARTA,19,Clairmont Road / Howard Avenue,,3,https://itsmarta.com/19.aspx,FF00FF,000000
+25523,MARTA,21,Memorial Drive,,3,https://itsmarta.com/21.aspx,FF00FF,000000
+25524,MARTA,24,McAfee / Hosea Williams,,3,https://itsmarta.com/24.aspx,FF00FF,000000
+25525,MARTA,25,Peachtree Boulevard,,3,https://itsmarta.com/25.aspx,FF00FF,000000
+25526,MARTA,26,Marietta Street / Perry Boulevard,,3,https://itsmarta.com/26.aspx,008080,000000
+25527,MARTA,27,Cheshire Bridge Road,,3,https://itsmarta.com/27.aspx,FF0080,000000
+25528,MARTA,30,LaVista Road,,3,https://itsmarta.com/30.aspx,00FF00,000000
+25529,MARTA,32,Bouldercrest,,3,https://itsmarta.com/32.aspx,00FF00,000000
+25530,MARTA,34,Gresham Road,,3,https://itsmarta.com/34.aspx,FF00FF,000000
+25531,MARTA,36,N Decatur Road / Virginia Highland,,3,https://itsmarta.com/36.aspx,A6CAF0,000000
+25532,MARTA,37,Defoors Ferry Road,,3,https://itsmarta.com/37.aspx,00FF80,000000
+25533,MARTA,39,Buford Highway,,3,https://itsmarta.com/39.aspx,008000,000000
+25534,MARTA,40,Peachtree Street / Downtown,,3,https://itsmarta.com/40.aspx,FFFF00,000000
+25535,MARTA,42,Pryor Road,,3,https://itsmarta.com/42.aspx,FF8000,000000
+25536,MARTA,47,I-85 Access Road,,3,https://itsmarta.com/47.aspx,FF8080,000000
+25537,MARTA,49,McDonough Boulevard,,3,https://itsmarta.com/49.aspx,FF8040,000000
+25538,MARTA,50,Donald Lee Hollowell Parkway,,3,https://itsmarta.com/50.aspx,00FF00,000000
+25539,MARTA,51,Joseph E Boone Boulevard,,3,https://itsmarta.com/51.aspx,00FFFF,000000
+25540,MARTA,55,Jonesboro Road,,3,https://itsmarta.com/55.aspx,FF8000,000000
+25541,MARTA,58,Hollywood Road / Lucile Avenue,,3,https://itsmarta.com/58.aspx,A6CAF0,000000
+25542,MARTA,60,Hightower Road,,3,https://itsmarta.com/60.aspx,00FFFF,000000
+25543,MARTA,66,Lynhurst Drive / Princeton Lakes,,3,https://itsmarta.com/66.aspx,00FFFF,000000
+25544,MARTA,68,Benjamin E Mays Drive,,3,https://itsmarta.com/68.aspx,FF0000,000000
+25545,MARTA,71,Cascade Road,,3,https://itsmarta.com/71.aspx,FF8080,000000
+25546,MARTA,73,Fulton Industrial,,3,https://itsmarta.com/73.aspx,008000,000000
+25547,MARTA,74,Flat Shoals Road,,3,https://itsmarta.com/74.aspx,FF8000,000000
+25548,MARTA,75,Lawrenceville Highway,,3,https://itsmarta.com/75.aspx,00FF00,000000
+25549,MARTA,78,Cleveland Avenue,,3,https://itsmarta.com/78.aspx,00FF00,000000
+25550,MARTA,79,Sylvan Hills,,3,https://itsmarta.com/79.aspx,FF8000,000000
+25551,MARTA,81,Venetian Hills / Delowe Drive,,3,https://itsmarta.com/81.aspx,00FF00,000000
+25552,MARTA,82,Camp Creek / South Fulton Parkway,,3,https://itsmarta.com/82.aspx,008000,000000
+25553,MARTA,83,Campbellton Road,,3,https://itsmarta.com/83.aspx,00FF00,000000
+25554,MARTA,84,Washington Rd/Camp Crk Marketplace,,3,https://itsmarta.com/84.aspx,00FFFF,000000
+25555,MARTA,85,Roswell,,3,https://itsmarta.com/85.aspx,008000,000000
+25556,MARTA,86,Fairington Road,,3,https://itsmarta.com/86.aspx,A6CAF0,000000
+25557,MARTA,87,Roswell Road / Sandy Springs,,3,https://itsmarta.com/87.aspx,00FFFF,000000
+25558,MARTA,89,Old National Highway,,3,https://itsmarta.com/89.aspx,FF8040,000000
+25559,MARTA,93,Headland Drive / Main Street,,3,https://itsmarta.com/93.aspx,00FFFF,000000
+25560,MARTA,94,Northside Drive,,3,https://itsmarta.com/94.aspx,008000,000000
+25561,MARTA,95,Metropolitan Parkway,,3,https://itsmarta.com/95.aspx,FF0000,000000
+25562,MARTA,102,North Avenue / Little Five Points,,3,https://itsmarta.com/102.aspx,00FF00,000000
+25563,MARTA,103,Peeler Road,,3,https://itsmarta.com/103.aspx,00FFFF,000000
+25564,MARTA,104,Winters Chapel Road,,3,https://itsmarta.com/104.aspx,00FFFF,000000
+25565,MARTA,107,Glenwood,,3,https://itsmarta.com/107.aspx,008000,000000
+25566,MARTA,110,Peachtree Road / Buckhead,,3,https://itsmarta.com/110.aspx,FF8040,000000
+25567,MARTA,111,Snapfinger Woods,,3,https://itsmarta.com/111.aspx,008000,000000
+25568,MARTA,114,Columbia Drive,,3,https://itsmarta.com/114.aspx,FF8040,000000
+25569,MARTA,115,Covington Highway,,3,https://itsmarta.com/115.aspx,00FF00,000000
+25570,MARTA,116,Redan Road,,3,https://itsmarta.com/116.aspx,00FFFF,000000
+25571,MARTA,117,Rockbridge Road / Panola Road,,3,https://itsmarta.com/117.aspx,00FF00,000000
+25572,MARTA,119,Hairston Road / Stone Mtn Village,,3,https://itsmarta.com/119.aspx,008080,000000
+25573,MARTA,120,East Ponce De Leon Avenue,,3,https://itsmarta.com/120.aspx,FF00FF,000000
+25574,MARTA,121,Memorial Drive / N Hairston Road,,3,https://itsmarta.com/121.aspx,00FFFF,000000
+25575,MARTA,123,Church Street,,3,https://itsmarta.com/123.aspx,00FF00,000000
+25576,MARTA,124,Pleasantdale Road,,3,https://itsmarta.com/124.aspx,FF00FF,000000
+25577,MARTA,125,Clarkston,,3,https://itsmarta.com/125.aspx,008000,000000
+25578,MARTA,126,Embry Hills,,3,https://itsmarta.com/126.aspx,008000,000000
+25579,MARTA,132,Tilly Mill Road,,3,https://itsmarta.com/132.aspx,FF00FF,000000
+25580,MARTA,133,Shallowford Road,,3,https://itsmarta.com/133.aspx,FFFF00,000000
+25581,MARTA,140,North Point Parkway,,3,https://itsmarta.com/140.aspx,FF8000,000000
+25582,MARTA,141,Haynes Bridge Road / Milton,,3,https://itsmarta.com/141.aspx,FF00FF,000000
+25583,MARTA,142,East Holcomb Bridge Road,,3,https://itsmarta.com/142.aspx,FF00FF,000000
+25584,MARTA,143,Windward Park & Ride,,3,https://itsmarta.com/143.aspx,00FFFF,000000
+25585,MARTA,148,Mount Vernon Highway,,3,https://itsmarta.com/148.aspx,00FF00,000000
+25586,MARTA,150,Dunwoody Village,,3,https://itsmarta.com/150.aspx,00FFFF,000000
+25587,MARTA,153,James Jackson Parkway,,3,https://itsmarta.com/153.aspx,FF8000,000000
+25588,MARTA,155,Pittsburgh,,3,https://itsmarta.com/155.aspx,00FFFF,000000
+25589,MARTA,162,Myrtle Drive / Alison Court,,3,https://itsmarta.com/162.aspx,008080,000000
+25590,MARTA,165,Fairburn Road,,3,https://itsmarta.com/165.aspx,00FFFF,000000
+25591,MARTA,172,Sylvan Road / Virginia Avenue,,3,https://itsmarta.com/172.aspx,FF8040,000000
+25592,MARTA,178,Empire Blvd / Southside Ind Park,,3,https://itsmarta.com/178.aspx,00FFFF,000000
+25593,MARTA,180,Roosevelt Highway,,3,https://itsmarta.com/180.aspx,FF00FF,000000
+25594,MARTA,181,Washington Road / Fairburn,,3,https://itsmarta.com/181.aspx,FF8040,000000
+25680,MARTA,183,Greenbriar,,3,https://itsmarta.com/183.aspx,008000,000000
+25596,MARTA,185,Alpharetta,,3,https://itsmarta.com/185.aspx,FF8000,000000
+25597,MARTA,186,Rainbow Drive / South DeKalb,,3,https://itsmarta.com/186.aspx,00FF00,000000
+25598,MARTA,188,Oakley Industrial,,3,https://itsmarta.com/188.aspx,FF00FF,000000
+25599,MARTA,189,Flat Shoals Road / Scofield Road,,3,https://itsmarta.com/189.aspx,FF00FF,000000
+25600,MARTA,191,Riverdale / ATL Intl Terminal,,3,https://itsmarta.com/191.aspx,FF00FF,000000
+25601,MARTA,192,Old Dixie / Tara Boulevard,,3,https://itsmarta.com/192.aspx,008000,000000
+25602,MARTA,193,Morrow / Jonesboro,,3,https://itsmarta.com/193.aspx,008080,000000
+25603,MARTA,194,Conley Road / Mt Zion,,3,https://itsmarta.com/194.aspx,008000,000000
+25604,MARTA,195,Forest Parkway,,3,https://itsmarta.com/195.aspx,FF00FF,000000
+25605,MARTA,196,Upper Riverdale,,3,https://itsmarta.com/196.aspx,00FFFF,000000
+25606,MARTA,197,Battle Creek Road,,3,https://itsmarta.com/197.aspx,FF00FF,000000
+25607,MARTA,198,Southlake Parkway,,3,https://itsmarta.com/198.aspx,00FF00,000000
+25608,MARTA,201,Six Flags Over Georgia,,3,https://itsmarta.com/201.aspx,008000,000000
+25609,MARTA,221,Memorial Drive Limited,,3,https://itsmarta.com/221.aspx,FF00FF,000000
+25610,MARTA,295,Metropolitan Campus Express,,3,https://itsmarta.com/295.aspx,008000,000000
+25620,MARTA,800,Lovejoy,,3,https://itsmarta.com/800.aspx,00FF00,000000
+25621,MARTA,809,Monroe Drive / Boulevard,,3,https://itsmarta.com/809.aspx,FF0000,000000
+25622,MARTA,813,Atlanta University Center,,3,https://itsmarta.com/813.aspx,00FFFF,000000
+25623,MARTA,816,North Highland Avenue,,3,https://itsmarta.com/816.aspx,00FFFF,000000
+25624,MARTA,823,Belvedere,,3,https://itsmarta.com/823.aspx,00FF00,000000
+25625,MARTA,825,Johnson Ferry Road,,3,https://itsmarta.com/825.aspx,FF0000,000000
+25626,MARTA,832,Grant Park,,3,https://itsmarta.com/832.aspx,00FF00,000000
+25627,MARTA,850,Carroll Heights / Fairburn Heights,,3,https://itsmarta.com/850.aspx,FF00FF,000000
+25628,MARTA,853,Center Hill,,3,https://itsmarta.com/853.aspx,A6CAF0,000000
+25629,MARTA,856,Baker Hills / Wilson Mill Meadows,,3,https://itsmarta.com/856.aspx,FF8040,000000
+25630,MARTA,865,Boulder Park Drive,,3,https://itsmarta.com/865.aspx,00FF00,000000
+25631,MARTA,867,Peyton Forest / Dixie Hills,,3,https://itsmarta.com/867.aspx,00FFFF,000000
+25632,MARTA,899,Old Fourth Ward,,3,https://itsmarta.com/899.aspx,FF00FF,000000
+25634,MARTA,ATLSC,Atlanta Streetcar,,0,https://itsmarta.com/Atlanta-Street-Car-Info.aspx,FF00FF,000000
+25636,MARTA,BLUE,BLUE,,1,https://itsmarta.com/Blue-Line.aspx,0075B2,000000
+25637,MARTA,GOLD,GOLD,,1,https://itsmarta.com/Gold-Line.aspx,D4A723,000000
+25638,MARTA,GREEN,GREEN,,1,https://itsmarta.com/Green-Line.aspx,009D4B,000000
+25639,MARTA,RED,RED,,1,https://itsmarta.com/Red-Line.aspx,CE242B,000000

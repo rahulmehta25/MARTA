@@ -1,0 +1,36 @@
+services:
+  - type: web
+    name: marta-api
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn src.api.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: marta-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: marta-cache
+          property: connectionString
+      - key: ENVIRONMENT
+        value: production
+      - key: SECRET_KEY
+        generateValue: true
+      - key: GTFS_UPDATE_INTERVAL
+        value: 300
+    healthCheckPath: /health
+    autoDeploy: true
+
+databases:
+  - name: marta-db
+    databaseName: marta_analytics
+    user: marta_user
+    plan: free
+
+redis:
+  - name: marta-cache
+    plan: free
+    maxmemoryPolicy: allkeys-lru
