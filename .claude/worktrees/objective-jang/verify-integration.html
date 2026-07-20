@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MARTA Integration Verification</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #2d3748;
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 10px;
+            background: #f7fafc;
+            border-left: 4px solid #4299e1;
+        }
+        .test-title {
+            font-weight: bold;
+            font-size: 18px;
+            margin-bottom: 10px;
+            color: #2d3748;
+        }
+        .status {
+            padding: 8px 15px;
+            border-radius: 20px;
+            display: inline-block;
+            font-size: 14px;
+            font-weight: 600;
+            margin: 5px 0;
+        }
+        .success { background: #48bb78; color: white; }
+        .error { background: #f56565; color: white; }
+        .pending { background: #ed8936; color: white; }
+        .info { background: #4299e1; color: white; }
+        .data-preview {
+            background: #2d3748;
+            color: #48bb78;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            overflow-x: auto;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .train-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .line-badge {
+            padding: 4px 12px;
+            border-radius: 4px;
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .RED { background: #CE242B; }
+        .GOLD { background: #D4A723; }
+        .GREEN { background: #009D4B; }
+        .BLUE { background: #0075B2; }
+        button {
+            background: #4299e1;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        button:hover { background: #3182ce; }
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .metric-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+        .metric-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #4299e1;
+        }
+        .metric-label {
+            font-size: 14px;
+            color: #718096;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚇 MARTA Integration Verification Dashboard</h1>
+        
+        <!-- Backend Test -->
+        <div class="test-section">
+            <div class="test-title">1. Railway Backend Status</div>
+            <div id="backend-test">
+                <span class="status pending">Testing...</span>
+            </div>
+        </div>
+
+        <!-- Frontend Test -->
+        <div class="test-section">
+            <div class="test-title">2. Vercel Frontend Status</div>
+            <div id="frontend-test">
+                <span class="status pending">Testing...</span>
+            </div>
+        </div>
+
+        <!-- CORS Test -->
+        <div class="test-section">
+            <div class="test-title">3. CORS Configuration</div>
+            <div id="cors-test">
+                <span class="status pending">Testing...</span>
+            </div>
+        </div>
+
+        <!-- API Endpoints Test -->
+        <div class="test-section">
+            <div class="test-title">4. API Endpoints</div>
+            <div id="endpoints-test">
+                <span class="status pending">Testing...</span>
+            </div>
+        </div>
+
+        <!-- Real-time Data -->
+        <div class="test-section">
+            <div class="test-title">5. Live MARTA Data</div>
+            <div id="metrics" class="metrics"></div>
+            <div id="realtime-data"></div>
+        </div>
+
+        <!-- Controls -->
+        <div style="text-align: center; margin-top: 30px;">
+            <button onclick="runAllTests()">🔄 Run All Tests</button>
+            <button onclick="testFrontendIntegration()">🌐 Test Frontend Integration</button>
+        </div>
+    </div>
+
+    <script>
+        const BACKEND_URL = 'https://marta-production.up.railway.app';
+        const FRONTEND_URL = 'https://marta-eta.vercel.app';
+
+        async function testBackend() {
+            const container = document.getElementById('backend-test');
+            try {
+                const response = await fetch(`${BACKEND_URL}/`);
+                const data = await response.json();
+                
+                if (data.api_key_configured) {
+                    container.innerHTML = `
+                        <span class="status success">✅ Backend Online</span>
+                        <span class="status info">API Key: Configured</span>
+                        <div class="data-preview">${JSON.stringify(data, null, 2)}</div>
+                    `;
+                } else {
+                    container.innerHTML = `
+                        <span class="status error">⚠️ API Key Not Configured</span>
+                    `;
+                }
+            } catch (error) {
+                container.innerHTML = `
+                    <span class="status error">❌ Backend Offline</span>
+                    <div class="data-preview">Error: ${error.message}</div>
+                `;
+            }
+        }
+
+        async function testFrontend() {
+            const container = document.getElementById('frontend-test');
+            try {
+                const response = await fetch(FRONTEND_URL, { mode: 'no-cors' });
+                container.innerHTML = `
+                    <span class="status success">✅ Frontend Deployed</span>
+                    <span class="status info">URL: ${FRONTEND_URL}</span>
+                `;
+            } catch (error) {
+                container.innerHTML = `
+                    <span class="status error">❌ Frontend Unreachable</span>
+                `;
+            }
+        }
+
+        async function testCORS() {
+            const container = document.getElementById('cors-test');
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/v1/marta/rail/arrivals`);
+                
+                if (response.ok) {
+                    container.innerHTML = `
+                        <span class="status success">✅ CORS Enabled</span>
+                        <span class="status info">Cross-origin requests allowed</span>
+                    `;
+                } else {
+                    container.innerHTML = `
+                        <span class="status error">❌ CORS Issue</span>
+                    `;
+                }
+            } catch (error) {
+                container.innerHTML = `
+                    <span class="status error">❌ CORS Blocked</span>
+                    <div class="data-preview">Error: ${error.message}</div>
+                `;
+            }
+        }
+
+        async function testEndpoints() {
+            const container = document.getElementById('endpoints-test');
+            const endpoints = [
+                '/health',
+                '/api/v1/marta/rail/arrivals',
+                '/api/v1/marta/rail/stations',
+                '/api/v1/marta/rail/status'
+            ];
+            
+            let results = [];
+            for (const endpoint of endpoints) {
+                try {
+                    const response = await fetch(`${BACKEND_URL}${endpoint}`);
+                    const status = response.ok ? '✅' : '❌';
+                    results.push(`${status} ${endpoint} (${response.status})`);
+                } catch (error) {
+                    results.push(`❌ ${endpoint} (Failed)`);
+                }
+            }
+            
+            container.innerHTML = `
+                <div class="data-preview">${results.join('\n')}</div>
+            `;
+        }
+
+        async function loadRealtimeData() {
+            const metricsContainer = document.getElementById('metrics');
+            const dataContainer = document.getElementById('realtime-data');
+            
+            try {
+                // Get system status
+                const statusResponse = await fetch(`${BACKEND_URL}/api/v1/marta/rail/status`);
+                const status = await statusResponse.json();
+                
+                metricsContainer.innerHTML = `
+                    <div class="metric-card">
+                        <div class="metric-value">${status.active_trains}</div>
+                        <div class="metric-label">Active Trains</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">${status.stations_with_service}</div>
+                        <div class="metric-label">Active Stations</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">${status.total_arrivals}</div>
+                        <div class="metric-label">Total Arrivals</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">${status.delayed_arrivals}</div>
+                        <div class="metric-label">Delays</div>
+                    </div>
+                `;
+                
+                // Get arrivals
+                const arrivalsResponse = await fetch(`${BACKEND_URL}/api/v1/marta/rail/arrivals`);
+                const arrivals = await arrivalsResponse.json();
+                
+                // Show first 5 arrivals
+                let html = '<h4>Next Arrivals:</h4>';
+                arrivals.slice(0, 5).forEach(train => {
+                    html += `
+                        <div class="train-card">
+                            <div>
+                                <span class="line-badge ${train.line}">${train.line}</span>
+                                <strong>${train.station}</strong> → ${train.destination}
+                            </div>
+                            <div>
+                                <strong>${train.waiting_time}</strong>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                dataContainer.innerHTML = html;
+                
+            } catch (error) {
+                dataContainer.innerHTML = `
+                    <span class="status error">Failed to load real-time data</span>
+                    <div class="data-preview">Error: ${error.message}</div>
+                `;
+            }
+        }
+
+        async function testFrontendIntegration() {
+            // Open frontend in new tab and check console for errors
+            window.open(FRONTEND_URL, '_blank');
+            
+            // Also test if frontend's API config is correct
+            const testUrl = `${FRONTEND_URL}`;
+            alert(`Frontend opened in new tab.\n\nPlease check:\n1. Is the map loading?\n2. Are real-time arrivals showing?\n3. Check browser console for any errors (F12)`);
+        }
+
+        async function runAllTests() {
+            await testBackend();
+            await testFrontend();
+            await testCORS();
+            await testEndpoints();
+            await loadRealtimeData();
+        }
+
+        // Run tests on load
+        runAllTests();
+        
+        // Auto-refresh real-time data every 15 seconds
+        setInterval(loadRealtimeData, 15000);
+    </script>
+</body>
+</html>

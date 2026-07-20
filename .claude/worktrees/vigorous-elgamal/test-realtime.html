@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MARTA Real-time Test</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #e0e0e0;
+        }
+        .container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: #2a2a2a;
+            border-radius: 8px;
+            padding: 15px;
+            border: 1px solid #3a3a3a;
+        }
+        .station {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #fff;
+        }
+        .train {
+            padding: 8px;
+            margin: 5px 0;
+            background: #333;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .line {
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-weight: bold;
+            color: white;
+            font-size: 12px;
+        }
+        .line.RED { background: #CE242B; }
+        .line.GOLD { background: #D4A723; }
+        .line.GREEN { background: #009D4B; }
+        .line.BLUE { background: #0075B2; }
+        .status {
+            padding: 10px;
+            background: #333;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .error { color: #ff6b6b; }
+        .success { color: #51cf66; }
+        h1 { text-align: center; }
+        .refresh-btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+        }
+        .refresh-btn:hover { background: #2563eb; }
+    </style>
+</head>
+<body>
+    <h1>🚇 MARTA Real-Time Rail Arrivals</h1>
+    
+    <div id="status" class="status">
+        <div>Backend: <span id="backend-status">Checking...</span></div>
+        <div>API Key: <span id="api-key-status">Checking...</span></div>
+        <div>Last Update: <span id="last-update">Never</span></div>
+        <button class="refresh-btn" onclick="fetchData()">Refresh Data</button>
+    </div>
+
+    <div id="arrivals" class="container">
+        <div class="card">Loading...</div>
+    </div>
+
+    <script>
+        const BACKEND_URL = 'https://marta-production.up.railway.app';
+        
+        async function checkBackend() {
+            try {
+                const response = await fetch(`${BACKEND_URL}/`);
+                const data = await response.json();
+                
+                const backendStatus = document.getElementById('backend-status');
+                const apiKeyStatus = document.getElementById('api-key-status');
+                
+                if (data.api_key_configured !== undefined) {
+                    // New Flask backend
+                    backendStatus.innerHTML = '<span class="success">✅ Flask Backend Active</span>';
+                    apiKeyStatus.innerHTML = data.api_key_configured ? 
+                        '<span class="success">✅ Configured</span>' : 
+                        '<span class="error">❌ Not Configured</span>';
+                } else {
+                    // Old backend
+                    backendStatus.innerHTML = '<span class="error">⚠️ Old Backend (Waiting for deployment)</span>';
+                    apiKeyStatus.innerHTML = '<span class="error">Unknown</span>';
+                }
+                
+                return data.api_key_configured;
+            } catch (error) {
+                document.getElementById('backend-status').innerHTML = '<span class="error">❌ Offline</span>';
+                return false;
+            }
+        }
+        
+        async function fetchData() {
+            const apiReady = await checkBackend();
+            
+            if (!apiReady) {
+                document.getElementById('arrivals').innerHTML = `
+                    <div class="card error">
+                        <h3>Backend Not Ready</h3>
+                        <p>Waiting for Railway deployment to complete...</p>
+                        <p>The Flask backend with MARTA endpoints hasn't deployed yet.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/v1/marta/rail/arrivals`);
+                
+                if (!response.ok) {
+                    const error = await response.text();
+                    throw new Error(`HTTP ${response.status}: ${error}`);
+                }
+                
+                const data = await response.json();
+                
+                // Group by station
+                const stations = {};
+                data.forEach(arrival => {
+                    if (!stations[arrival.station]) {
+                        stations[arrival.station] = [];
+                    }
+                    stations[arrival.station].push(arrival);
+                });
+                
+                // Display arrivals
+                const container = document.getElementById('arrivals');
+                container.innerHTML = '';
+                
+                Object.entries(stations).forEach(([station, arrivals]) => {
+                    const card = document.createElement('div');
+                    card.className = 'card';
+                    
+                    let html = `<div class="station">${station}</div>`;
+                    
+                    arrivals.slice(0, 5).forEach(train => {
+                        html += `
+                            <div class="train">
+                                <div>
+                                    <span class="line ${train.line}">${train.line}</span>
+                                    ${train.destination}
+                                </div>
+                                <div>${train.waiting_time}</div>
+                            </div>
+                        `;
+                    });
+                    
+                    card.innerHTML = html;
+                    container.appendChild(card);
+                });
+                
+                document.getElementById('last-update').textContent = new Date().toLocaleTimeString();
+                
+            } catch (error) {
+                document.getElementById('arrivals').innerHTML = `
+                    <div class="card error">
+                        <h3>Error Loading Data</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        // Auto-refresh every 15 seconds
+        setInterval(fetchData, 15000);
+        
+        // Initial load
+        fetchData();
+    </script>
+</body>
+</html>

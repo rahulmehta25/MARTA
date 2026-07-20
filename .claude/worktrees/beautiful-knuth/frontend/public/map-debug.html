@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>MARTA Map Debug</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href='https://api.mapbox.com/mapbox-gl-js/v3.1.2/mapbox-gl.css' rel='stylesheet' />
+    <script src='https://api.mapbox.com/mapbox-gl-js/v3.1.2/mapbox-gl.js'></script>
+    <style>
+        body { margin: 0; padding: 20px; font-family: system-ui; }
+        #map { width: 100%; height: 500px; border: 2px solid #003E7E; border-radius: 8px; }
+        .info { padding: 10px; background: #f0f0f0; border-radius: 4px; margin: 10px 0; }
+        .success { color: green; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+    <h1>🚇 MARTA Map Debug</h1>
+    <div id="status" class="info">Initializing...</div>
+    <div id="map"></div>
+    <div id="console" class="info" style="white-space: pre-wrap; font-family: monospace;"></div>
+
+    <script>
+        const log = (msg, isError = false) => {
+            const consoleDiv = document.getElementById('console');
+            const time = new Date().toLocaleTimeString();
+            consoleDiv.innerHTML += `[${time}] ${isError ? '❌' : '✅'} ${msg}\n`;
+        };
+
+        const status = document.getElementById('status');
+        
+        // Using the same token from your app
+        const MAPBOX_TOKEN = 'pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw';
+        
+        try {
+            log('Setting Mapbox access token...');
+            mapboxgl.accessToken = MAPBOX_TOKEN;
+            
+            log('Token set: ' + MAPBOX_TOKEN.substring(0, 10) + '...');
+            
+            log('Creating map instance...');
+            const map = new mapboxgl.Map({
+                container: 'map',
+                style: 'mapbox://styles/mapbox/light-v10',
+                center: [-84.3880, 33.7490], // Atlanta
+                zoom: 11
+            });
+            
+            map.on('load', () => {
+                log('Map loaded successfully!');
+                status.innerHTML = '<span class="success">✅ Map is working!</span>';
+                
+                // Add a marker for Five Points station
+                new mapboxgl.Marker({ color: '#003E7E' })
+                    .setLngLat([-84.3918, 33.7537])
+                    .setPopup(new mapboxgl.Popup().setHTML('<h3>Five Points Station</h3>'))
+                    .addTo(map);
+                    
+                log('Added Five Points marker');
+            });
+            
+            map.on('error', (e) => {
+                log('Map error: ' + e.error.message, true);
+                status.innerHTML = '<span class="error">❌ Map error - check console</span>';
+            });
+            
+        } catch (error) {
+            log('Error initializing map: ' + error.message, true);
+            status.innerHTML = '<span class="error">❌ Failed to initialize map</span>';
+        }
+        
+        // Check if Mapbox GL is loaded
+        if (typeof mapboxgl !== 'undefined') {
+            log('Mapbox GL JS loaded: v' + mapboxgl.version);
+        } else {
+            log('Mapbox GL JS not loaded!', true);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,313 @@
+name: Test Coverage Analysis
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+env:
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  coverage-analysis:
+    name: Comprehensive Coverage Analysis
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: test_password
+          POSTGRES_USER: test_user
+          POSTGRES_DB: test_marta_db
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        cache: 'pip'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pytest pytest-cov pytest-xdist coverage[toml]
+        pip install -r requirements.txt
+
+    - name: Set up test database
+      env:
+        PGPASSWORD: test_password
+      run: |
+        psql -h localhost -U test_user -d test_marta_db -c "CREATE EXTENSION IF NOT EXISTS postgis;"
+
+    - name: Run comprehensive test suite with coverage
+      env:
+        DB_HOST: localhost
+        DB_PORT: 5432
+        DB_NAME: test_marta_db
+        DB_USER: test_user
+        DB_PASSWORD: test_password
+        REDIS_HOST: localhost
+        REDIS_PORT: 6379
+        TESTING: true
+        PYTHONPATH: ${{ github.workspace }}
+      run: |
+        # Run all tests with coverage
+        pytest \
+          tests/unit/ \
+          tests/integration/ \
+          --cov=src \
+          --cov-report=xml \
+          --cov-report=html \
+          --cov-report=term-missing \
+          --cov-report=json \
+          --cov-config=.coveragerc \
+          --junitxml=coverage-results.xml \
+          --maxfail=10 \
+          -v \
+          --tb=short \
+          -n auto
+
+    - name: Generate coverage badge
+      run: |
+        python -c "
+        import json
+        with open('coverage.json', 'r') as f:
+            data = json.load(f)
+        
+        total_coverage = data['totals']['percent_covered']
+        
+        if total_coverage >= 90:
+            color = 'brightgreen'
+        elif total_coverage >= 80:
+            color = 'green'
+        elif total_coverage >= 70:
+            color = 'yellow'
+        elif total_coverage >= 60:
+            color = 'orange'
+        else:
+            color = 'red'
+        
+        badge_url = f'https://img.shields.io/badge/coverage-{total_coverage:.1f}%25-{color}'
+        print(f'Coverage: {total_coverage:.1f}%')
+        print(f'Badge URL: {badge_url}')
+        
+        with open('coverage-badge.json', 'w') as f:
+            json.dump({'coverage': total_coverage, 'color': color, 'url': badge_url}, f)
+        "
+
+    - name: Coverage analysis and reporting
+      run: |
+        echo "## 📊 Coverage Analysis Report" > coverage-report.md
+        echo "" >> coverage-report.md
+        
+        # Overall coverage summary
+        python -c "
+        import json
+        with open('coverage.json', 'r') as f:
+            data = json.load(f)
+        
+        total_coverage = data['totals']['percent_covered']
+        total_lines = data['totals']['num_statements']
+        covered_lines = data['totals']['covered_lines']
+        missing_lines = data['totals']['missing_lines']
+        
+        print(f'### Overall Coverage: {total_coverage:.1f}%')
+        print(f'- **Total Lines:** {total_lines:,}')
+        print(f'- **Covered Lines:** {covered_lines:,}')
+        print(f'- **Missing Lines:** {missing_lines:,}')
+        print()
+        
+        # Module breakdown
+        print('### Coverage by Module')
+        print('| Module | Coverage | Lines | Missing |')
+        print('|--------|----------|-------|---------|')
+        
+        files = data['files']
+        module_coverage = {}
+        
+        for file_path, file_data in files.items():
+            if file_path.startswith('src/'):
+                module = file_path.split('/')[1] if '/' in file_path else 'root'
+                if module not in module_coverage:
+                    module_coverage[module] = {
+                        'total_lines': 0,
+                        'covered_lines': 0,
+                        'missing_lines': 0
+                    }
+                
+                module_coverage[module]['total_lines'] += file_data['summary']['num_statements']
+                module_coverage[module]['covered_lines'] += file_data['summary']['covered_lines']
+                module_coverage[module]['missing_lines'] += file_data['summary']['missing_lines']
+        
+        for module, stats in sorted(module_coverage.items()):
+            if stats['total_lines'] > 0:
+                coverage_pct = (stats['covered_lines'] / stats['total_lines']) * 100
+                print(f'| {module} | {coverage_pct:.1f}% | {stats[\"total_lines\"]} | {stats[\"missing_lines\"]} |')
+        
+        print()
+        
+        # Files with low coverage
+        print('### Files Needing Attention (< 80% coverage)')
+        print('| File | Coverage | Missing Lines |')
+        print('|------|----------|---------------|')
+        
+        low_coverage_files = []
+        for file_path, file_data in files.items():
+            if file_path.startswith('src/'):
+                coverage_pct = file_data['summary']['percent_covered']
+                if coverage_pct < 80:
+                    missing_lines = file_data['summary']['missing_lines']
+                    low_coverage_files.append((file_path, coverage_pct, missing_lines))
+        
+        for file_path, coverage_pct, missing_lines in sorted(low_coverage_files, key=lambda x: x[1]):
+            print(f'| {file_path} | {coverage_pct:.1f}% | {missing_lines} |')
+        
+        if not low_coverage_files:
+            print('| *All files have ≥80% coverage* | | |')
+        
+        " >> coverage-report.md
+
+    - name: Check coverage thresholds
+      run: |
+        python -c "
+        import json
+        with open('coverage.json', 'r') as f:
+            data = json.load(f)
+        
+        total_coverage = data['totals']['percent_covered']
+        
+        # Module-specific thresholds
+        thresholds = {
+            'models': 85,
+            'optimization': 80,
+            'data_ingestion': 75,
+            'api': 70,
+            'database': 80,
+            'visualization': 65
+        }
+        
+        files = data['files']
+        module_coverage = {}
+        
+        for file_path, file_data in files.items():
+            if file_path.startswith('src/'):
+                module = file_path.split('/')[1] if '/' in file_path else 'root'
+                if module not in module_coverage:
+                    module_coverage[module] = {
+                        'total_lines': 0,
+                        'covered_lines': 0
+                    }
+                
+                module_coverage[module]['total_lines'] += file_data['summary']['num_statements']
+                module_coverage[module]['covered_lines'] += file_data['summary']['covered_lines']
+        
+        # Check overall threshold
+        if total_coverage < 80:
+            print(f'❌ Overall coverage {total_coverage:.1f}% below 80% threshold')
+            exit(1)
+        
+        # Check module thresholds
+        failed_modules = []
+        for module, stats in module_coverage.items():
+            if stats['total_lines'] > 0:
+                coverage_pct = (stats['covered_lines'] / stats['total_lines']) * 100
+                threshold = thresholds.get(module, 70)  # Default 70%
+                
+                if coverage_pct < threshold:
+                    failed_modules.append(f'{module}: {coverage_pct:.1f}% < {threshold}%')
+                    print(f'❌ Module {module} coverage {coverage_pct:.1f}% below {threshold}% threshold')
+                else:
+                    print(f'✅ Module {module} coverage {coverage_pct:.1f}% meets {threshold}% threshold')
+        
+        if failed_modules:
+            print(f'Coverage check failed for {len(failed_modules)} modules')
+            exit(1)
+        else:
+            print(f'✅ All coverage thresholds met! Overall: {total_coverage:.1f}%')
+        "
+
+    - name: Upload coverage reports
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: coverage-reports
+        path: |
+          htmlcov/
+          coverage.xml
+          coverage.json
+          coverage-results.xml
+          coverage-report.md
+          coverage-badge.json
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.xml
+        flags: comprehensive
+        name: codecov-comprehensive
+        fail_ci_if_error: true
+
+    - name: Comment PR with coverage report
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const fs = require('fs');
+          
+          if (fs.existsSync('coverage-report.md')) {
+            const report = fs.readFileSync('coverage-report.md', 'utf8');
+            
+            // Add coverage badge
+            if (fs.existsSync('coverage-badge.json')) {
+              const badge = JSON.parse(fs.readFileSync('coverage-badge.json', 'utf8'));
+              const badgeMarkdown = `![Coverage](${badge.url})`;
+              
+              const fullReport = `${badgeMarkdown}\n\n${report}`;
+              
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: fullReport
+              });
+            } else {
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: report
+              });
+            }
+          }
+
+    - name: Update coverage badge in README
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      run: |
+        echo "🏷️ Updating coverage badge in README..."
+        # This would update the coverage badge in README.md
+        # Implementation depends on how you want to store/display the badge

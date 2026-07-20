@@ -1,0 +1,37 @@
+name: Collect MARTA Data to Supabase
+
+on:
+  schedule:
+    # Run every 30 minutes during operational hours (5 AM - 1 AM EST)
+    - cron: '*/30 9-5 * * *'  # 9 AM UTC - 5 AM UTC = 5 AM - 1 AM EST
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install dependencies
+      run: |
+        pip install httpx python-dotenv supabase
+    
+    - name: Collect and store data in Supabase
+      env:
+        MARTA_API_KEY: ${{ secrets.MARTA_API_KEY }}
+        SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+        SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+      run: |
+        python collect_data_secure.py
+    
+    - name: Check collection status
+      if: failure()
+      run: |
+        echo "Data collection failed. Check logs above."
+        exit 1

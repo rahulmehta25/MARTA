@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>MARTA API Connection Test</title>
+    <style>
+        body { font-family: monospace; padding: 20px; }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+        pre { background: #f0f0f0; padding: 10px; overflow: auto; }
+    </style>
+</head>
+<body>
+    <h1>MARTA API Connection Test</h1>
+    <div id="results"></div>
+    
+    <script>
+        const SUPABASE_URL = 'https://vglychbweuowsovboxyf.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZnbHljaGJ3ZXVvd3NvdmJveHlmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY2OTA5OTMsImV4cCI6MjA3MjI2Njk5M30.W8P-ZLQRWouaWH8LWVA4frKNs5r-nX_j_x27oRIAerY';
+        
+        const results = document.getElementById('results');
+        
+        async function testEndpoint(name, url) {
+            const div = document.createElement('div');
+            div.innerHTML = `<h3>Testing ${name}...</h3>`;
+            results.appendChild(div);
+            
+            try {
+                const response = await fetch(url, {
+                    headers: {
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    div.innerHTML += `<p class="success">✅ ${name}: SUCCESS</p>`;
+                    div.innerHTML += `<pre>${JSON.stringify(data, null, 2).substring(0, 500)}...</pre>`;
+                } else {
+                    div.innerHTML += `<p class="error">❌ ${name}: HTTP ${response.status}</p>`;
+                    div.innerHTML += `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+                }
+            } catch (error) {
+                div.innerHTML += `<p class="error">❌ ${name}: ${error.message}</p>`;
+            }
+        }
+        
+        // Test all endpoints
+        async function runTests() {
+            results.innerHTML = '<h2 class="info">Starting API tests from browser...</h2>';
+            
+            await testEndpoint('MARTA Arrivals', `${SUPABASE_URL}/functions/v1/marta-arrivals?station=FIVE POINTS STATION`);
+            await testEndpoint('Analytics Performance', `${SUPABASE_URL}/functions/v1/analytics-performance`);
+            await testEndpoint('Analytics Insights', `${SUPABASE_URL}/functions/v1/analytics-insights`);
+            await testEndpoint('Predict Arrival', `${SUPABASE_URL}/functions/v1/predict-arrival?station=AIRPORT STATION&line=RED&direction=N`);
+            await testEndpoint('Delay Patterns', `${SUPABASE_URL}/functions/v1/delay-patterns`);
+            await testEndpoint('Demand Forecast', `${SUPABASE_URL}/functions/v1/demand-forecast?station=FIVE POINTS STATION`);
+            
+            results.innerHTML += '<h2 class="success">✅ All tests complete!</h2>';
+        }
+        
+        runTests();
+    </script>
+</body>
+</html>

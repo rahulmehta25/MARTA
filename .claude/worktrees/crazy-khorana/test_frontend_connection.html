@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Frontend-Backend Connection</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .pending { background: #fff3cd; color: #856404; }
+        pre {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>🚇 MARTA Frontend-Backend Connection Test</h1>
+    
+    <div class="test-section">
+        <h2>1. Backend API Test</h2>
+        <p>Testing Railway Backend: <code>https://marta-production.up.railway.app</code></p>
+        <button onclick="testBackend()">Test Backend</button>
+        <div id="backend-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Frontend Configuration</h2>
+        <p>Checking what API the frontend is configured to use...</p>
+        <button onclick="checkFrontendConfig()">Check Frontend Config</button>
+        <div id="frontend-config"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. Live Connection Test</h2>
+        <p>Testing if frontend can fetch data from backend...</p>
+        <button onclick="testLiveConnection()">Test Live Connection</button>
+        <div id="live-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>4. Supabase Database Test</h2>
+        <p>Testing Supabase data storage...</p>
+        <button onclick="testSupabase()">Test Supabase</button>
+        <div id="supabase-result"></div>
+    </div>
+
+    <script>
+        async function testBackend() {
+            const resultDiv = document.getElementById('backend-result');
+            resultDiv.innerHTML = '<span class="status pending">Testing...</span>';
+            
+            try {
+                const response = await fetch('https://marta-production.up.railway.app/api/v1/marta/rail/arrivals');
+                const data = await response.json();
+                
+                resultDiv.innerHTML = `
+                    <span class="status success">✅ Backend Working!</span>
+                    <pre>Found ${data.length} arrivals
+First arrival: ${JSON.stringify(data[0], null, 2)}</pre>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <span class="status error">❌ Backend Error</span>
+                    <pre>${error.message}</pre>
+                `;
+            }
+        }
+
+        async function checkFrontendConfig() {
+            const resultDiv = document.getElementById('frontend-config');
+            resultDiv.innerHTML = '<span class="status pending">Checking...</span>';
+            
+            // The frontend should be using one of these
+            const configs = {
+                'Railway (Current)': 'https://marta-production.up.railway.app',
+                'Supabase Edge Functions': 'https://vglychbweuowsovboxyf.supabase.co/functions/v1/marta-api',
+                'Local Development': 'http://localhost:8000'
+            };
+            
+            resultDiv.innerHTML = `
+                <span class="status success">Frontend Configuration Options:</span>
+                <pre>${JSON.stringify(configs, null, 2)}</pre>
+                <p><strong>Currently configured:</strong> Railway Backend</p>
+                <p>To change: Update VITE_API_URL in Vercel environment variables</p>
+            `;
+        }
+
+        async function testLiveConnection() {
+            const resultDiv = document.getElementById('live-result');
+            resultDiv.innerHTML = '<span class="status pending">Testing from frontend...</span>';
+            
+            try {
+                // Test the actual frontend
+                const response = await fetch('https://marta-eta.vercel.app');
+                const html = await response.text();
+                
+                // Check if the frontend HTML loads
+                if (html.includes('MARTA')) {
+                    resultDiv.innerHTML = `
+                        <span class="status success">✅ Frontend Loaded!</span>
+                        <p>The frontend app is accessible. It should be fetching from Railway API.</p>
+                        <p>Visit: <a href="https://marta-eta.vercel.app" target="_blank">https://marta-eta.vercel.app</a></p>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <span class="status error">⚠️ Frontend Issue</span>
+                        <p>Frontend loaded but may have issues.</p>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <span class="status error">❌ Connection Error</span>
+                    <pre>${error.message}</pre>
+                `;
+            }
+        }
+
+        async function testSupabase() {
+            const resultDiv = document.getElementById('supabase-result');
+            resultDiv.innerHTML = '<span class="status pending">Testing Supabase...</span>';
+            
+            const supabaseUrl = 'https://vglychbweuowsovboxyf.supabase.co';
+            const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZnbHljaGJ3ZXVvd3NvdmJveHlmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY2OTA5OTMsImV4cCI6MjA3MjI2Njk5M30.W8P-ZLQRWouaWH8LWVA4frKNs5r-nX_j_x27oRIAerY';
+            
+            try {
+                const response = await fetch(`${supabaseUrl}/rest/v1/arrivals?limit=5`, {
+                    headers: {
+                        'apikey': supabaseAnonKey,
+                        'Authorization': `Bearer ${supabaseAnonKey}`
+                    }
+                });
+                const data = await response.json();
+                
+                resultDiv.innerHTML = `
+                    <span class="status success">✅ Supabase Connected!</span>
+                    <pre>Found ${data.length} recent arrivals in database
+Latest arrival: ${data[0] ? JSON.stringify(data[0], null, 2) : 'No data yet'}</pre>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <span class="status error">❌ Supabase Error</span>
+                    <pre>${error.message}</pre>
+                `;
+            }
+        }
+
+        // Auto-run tests on load
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                testBackend();
+                checkFrontendConfig();
+                testSupabase();
+            }, 500);
+        });
+    </script>
+</body>
+</html>

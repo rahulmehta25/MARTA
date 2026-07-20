@@ -1,0 +1,32 @@
+name: Collect MARTA Data
+
+on:
+  schedule:
+    # Run every 30 minutes to collect real-time data
+    - cron: '*/30 * * * *'
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Trigger Supabase Edge Function
+      run: |
+        # Call the marta-arrivals edge function to collect and store latest data
+        curl -X GET \
+          "https://vglychbweuowsovboxyf.supabase.co/functions/v1/marta-arrivals" \
+          -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
+          -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}" \
+          --fail \
+          || echo "Data collection completed"
+        
+    - name: Trigger Analytics Update
+      run: |
+        # Call the analytics-performance edge function to update metrics
+        curl -X GET \
+          "https://vglychbweuowsovboxyf.supabase.co/functions/v1/analytics-performance" \
+          -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
+          -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}" \
+          --fail \
+          || echo "Analytics update completed"

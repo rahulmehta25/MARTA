@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MARTA Analytics Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .card h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+        
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .metric:last-child {
+            border-bottom: none;
+        }
+        
+        .metric-label {
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        .metric-value {
+            font-weight: bold;
+            font-size: 1.1em;
+            color: #333;
+        }
+        
+        .health-status {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .health-excellent { background: #10b981; }
+        .health-good { background: #3b82f6; }
+        .health-fair { background: #f59e0b; }
+        .health-poor { background: #ef4444; }
+        
+        .line-performance {
+            margin-top: 10px;
+        }
+        
+        .line-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px;
+            margin: 5px 0;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .line-name {
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .line-RED { color: #e3342f; }
+        .line-GOLD { color: #f6993f; }
+        .line-BLUE { color: #3490dc; }
+        .line-GREEN { color: #38c172; }
+        
+        .prediction-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .prediction-card h2 {
+            color: white;
+            border-bottom-color: rgba(255,255,255,0.3);
+        }
+        
+        .prediction-value {
+            font-size: 3em;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .confidence-bar {
+            width: 100%;
+            height: 10px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 5px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+        
+        .confidence-fill {
+            height: 100%;
+            background: white;
+            transition: width 0.5s ease;
+        }
+        
+        .insights-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .insight-item {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .insight-info { background: #e3f2fd; color: #1976d2; }
+        .insight-warning { background: #fff3e0; color: #f57c00; }
+        .insight-success { background: #e8f5e9; color: #388e3c; }
+        
+        .insight-icon {
+            margin-right: 10px;
+            font-size: 1.2em;
+        }
+        
+        .loading {
+            text-align: center;
+            color: #999;
+            padding: 20px;
+        }
+        
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        
+        .refresh-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: white;
+            color: #667eea;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 30px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .refresh-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+        }
+        
+        .timestamp {
+            text-align: center;
+            color: white;
+            opacity: 0.8;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚇 MARTA Analytics Dashboard</h1>
+        
+        <div class="dashboard" id="dashboard">
+            <!-- System Health Card -->
+            <div class="card" id="health-card">
+                <h2>System Health</h2>
+                <div class="loading">Loading...</div>
+            </div>
+            
+            <!-- Performance Metrics Card -->
+            <div class="card" id="performance-card">
+                <h2>Performance Metrics</h2>
+                <div class="loading">Loading...</div>
+            </div>
+            
+            <!-- Prediction Card -->
+            <div class="card prediction-card" id="prediction-card">
+                <h2>Next Arrival Prediction</h2>
+                <div class="loading" style="color: white;">Loading...</div>
+            </div>
+            
+            <!-- Line Performance Card -->
+            <div class="card" id="lines-card">
+                <h2>Line Performance</h2>
+                <div class="loading">Loading...</div>
+            </div>
+            
+            <!-- Delay Patterns Card -->
+            <div class="card" id="patterns-card">
+                <h2>Delay Patterns</h2>
+                <div class="loading">Loading...</div>
+            </div>
+            
+            <!-- Insights Card -->
+            <div class="card" id="insights-card">
+                <h2>System Insights</h2>
+                <div class="loading">Loading...</div>
+            </div>
+        </div>
+        
+        <div class="timestamp" id="timestamp"></div>
+    </div>
+    
+    <button class="refresh-btn" onclick="loadAllData()">🔄 Refresh</button>
+    
+    <script>
+        // Configuration
+        const API_BASE = 'https://marta-rail-api.up.railway.app';  // Production API
+        // const API_BASE = 'http://localhost:8000';  // Local testing
+        
+        // Load all dashboard data
+        async function loadAllData() {
+            console.log('Loading dashboard data...');
+            
+            // Update timestamp
+            document.getElementById('timestamp').textContent = 
+                `Last updated: ${new Date().toLocaleTimeString()}`;
+            
+            // Load all data in parallel
+            Promise.all([
+                loadSystemHealth(),
+                loadPerformance(),
+                loadPrediction(),
+                loadDelayPatterns(),
+                loadInsights()
+            ]).then(() => {
+                console.log('All data loaded successfully');
+            }).catch(error => {
+                console.error('Error loading data:', error);
+            });
+        }
+        
+        // Load system health
+        async function loadSystemHealth() {
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/analytics/performance`);
+                const data = await response.json();
+                
+                const healthCard = document.getElementById('health-card');
+                
+                if (data.error) {
+                    healthCard.innerHTML = '<h2>System Health</h2><div class="error">Unable to load health data</div>';
+                    return;
+                }
+                
+                const healthClass = `health-${data.health_status || 'fair'}`;
+                
+                healthCard.innerHTML = `
+                    <h2>System Health</h2>
+                    <div class="metric">
+                        <span class="metric-label">Status</span>
+                        <span class="health-status ${healthClass}">${data.health_status || 'Unknown'}</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Health Score</span>
+                        <span class="metric-value">${data.health_score || 0}%</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Analysis Method</span>
+                        <span class="metric-value">${data.method || 'basic'}</span>
+                    </div>
+                `;
+                
+                // Update line performance if available
+                if (data.line_performance) {
+                    updateLinePerformance(data.line_performance);
+                }
+                
+            } catch (error) {
+                console.error('Error loading health:', error);
+                document.getElementById('health-card').innerHTML = 
+                    '<h2>System Health</h2><div class="error">Connection error</div>';
+            }
+        }
+        
+        // Load performance metrics
+        async function loadPerformance() {
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/analytics/system`);
+                const data = await response.json();
+                
+                const perfCard = document.getElementById('performance-card');
+                
+                if (data.error) {
+                    perfCard.innerHTML = '<h2>Performance Metrics</h2><div class="error">Unable to load metrics</div>';
+                    return;
+                }
+                
+                const metrics = data.system_metrics || {};
+                
+                perfCard.innerHTML = `
+                    <h2>Performance Metrics</h2>
+                    <div class="metric">
+                        <span class="metric-label">Total Arrivals</span>
+                        <span class="metric-value">${metrics.total_arrivals || 0}</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Active Stations</span>
+                        <span class="metric-value">${metrics.active_stations || 0}</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Average Delay</span>
+                        <span class="metric-value">${Math.round(metrics.avg_delay || 0)}s</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Data Points</span>
+                        <span class="metric-value">${data.total_records_analyzed || 0}</span>
+                    </div>
+                `;
+                
+            } catch (error) {
+                console.error('Error loading performance:', error);
+            }
+        }
+        
+        // Load arrival prediction
+        async function loadPrediction() {
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/analytics/predictions/FIVE%20POINTS%20STATION?line=RED`);
+                const data = await response.json();
+                
+                const predCard = document.getElementById('prediction-card');
+                
+                if (data.error || !data.predicted_seconds) {
+                    predCard.innerHTML = `
+                        <h2>Next Arrival Prediction</h2>
+                        <div style="color: white; text-align: center; padding: 20px;">
+                            No prediction available
+                        </div>
+                    `;
+                    return;
+                }
+                
+                const minutes = Math.round(data.predicted_seconds / 60);
+                const confidence = Math.round((data.confidence || 0) * 100);
+                
+                predCard.innerHTML = `
+                    <h2>Next Arrival - Five Points (Red Line)</h2>
+                    <div class="prediction-value">${minutes} min</div>
+                    <div style="text-align: center; opacity: 0.9;">
+                        Method: ${data.method || 'statistical'}
+                    </div>
+                    <div class="confidence-bar">
+                        <div class="confidence-fill" style="width: ${confidence}%"></div>
+                    </div>
+                    <div style="text-align: center; margin-top: 5px; opacity: 0.9;">
+                        Confidence: ${confidence}%
+                    </div>
+                `;
+                
+            } catch (error) {
+                console.error('Error loading prediction:', error);
+            }
+        }
+        
+        // Update line performance
+        function updateLinePerformance(lineData) {
+            const linesCard = document.getElementById('lines-card');
+            
+            let html = '<h2>Line Performance</h2><div class="line-performance">';
+            
+            for (const [line, stats] of Object.entries(lineData)) {
+                const onTime = stats.on_time_percentage || stats.avg_on_time_pct || 0;
+                html += `
+                    <div class="line-item">
+                        <span class="line-name line-${line}">${line} Line</span>
+                        <span>${onTime.toFixed(1)}% on-time</span>
+                    </div>
+                `;
+            }
+            
+            html += '</div>';
+            linesCard.innerHTML = html;
+        }
+        
+        // Load delay patterns
+        async function loadDelayPatterns() {
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/analytics/delay-patterns`);
+                const data = await response.json();
+                
+                const patternsCard = document.getElementById('patterns-card');
+                
+                if (data.error || !data.patterns || data.patterns.length === 0) {
+                    patternsCard.innerHTML = `
+                        <h2>Delay Patterns</h2>
+                        <div style="color: #999; text-align: center; padding: 20px;">
+                            No patterns identified yet
+                        </div>
+                    `;
+                    return;
+                }
+                
+                let html = '<h2>Delay Patterns</h2><div class="line-performance">';
+                
+                data.patterns.slice(0, 3).forEach(pattern => {
+                    html += `
+                        <div class="line-item">
+                            <span>${pattern.type || 'Unknown'} on ${pattern.line || 'System'}</span>
+                            <span>${Math.round(pattern.average_delay || 0)}s avg</span>
+                        </div>
+                    `;
+                });
+                
+                html += '</div>';
+                patternsCard.innerHTML = html;
+                
+            } catch (error) {
+                console.error('Error loading patterns:', error);
+            }
+        }
+        
+        // Load insights
+        async function loadInsights() {
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/analytics/insights`);
+                const data = await response.json();
+                
+                const insightsCard = document.getElementById('insights-card');
+                
+                if (data.error || !data.insights || data.insights.length === 0) {
+                    insightsCard.innerHTML = `
+                        <h2>System Insights</h2>
+                        <div style="color: #999; text-align: center; padding: 20px;">
+                            No insights available
+                        </div>
+                    `;
+                    return;
+                }
+                
+                let html = '<h2>System Insights</h2><ul class="insights-list">';
+                
+                data.insights.slice(0, 4).forEach(insight => {
+                    const severityClass = `insight-${insight.severity || 'info'}`;
+                    const icon = insight.severity === 'warning' ? '⚠️' : 
+                                insight.severity === 'success' ? '✅' : 'ℹ️';
+                    
+                    html += `
+                        <li class="insight-item ${severityClass}">
+                            <span class="insight-icon">${icon}</span>
+                            <span>${insight.message}</span>
+                        </li>
+                    `;
+                });
+                
+                html += '</ul>';
+                insightsCard.innerHTML = html;
+                
+            } catch (error) {
+                console.error('Error loading insights:', error);
+            }
+        }
+        
+        // Auto-refresh every 30 seconds
+        setInterval(loadAllData, 30000);
+        
+        // Initial load
+        loadAllData();
+    </script>
+</body>
+</html>

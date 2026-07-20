@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MARTA Frontend Test</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f3f4f6;
+        }
+        .status {
+            padding: 20px;
+            margin: 10px 0;
+            border-radius: 8px;
+            background: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .success { border-left: 4px solid #10b981; }
+        .error { border-left: 4px solid #ef4444; }
+        .pending { border-left: 4px solid #f59e0b; }
+        h1 { color: #1f2937; }
+        pre {
+            background: #f9fafb;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        button {
+            background: #3b82f6;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #2563eb; }
+    </style>
+</head>
+<body>
+    <h1>🚇 MARTA Transit Analytics - System Test</h1>
+    
+    <div id="frontend-status" class="status pending">
+        <h3>Frontend Status</h3>
+        <p>Checking Vercel deployment...</p>
+    </div>
+    
+    <div id="backend-status" class="status pending">
+        <h3>Backend Status</h3>
+        <p>Checking Railway deployment...</p>
+    </div>
+    
+    <div id="marta-api-status" class="status pending">
+        <h3>MARTA API Status</h3>
+        <p>Checking real-time data...</p>
+    </div>
+    
+    <div id="results" class="status">
+        <h3>Test Results</h3>
+        <pre id="results-content">Running tests...</pre>
+    </div>
+    
+    <div style="margin-top: 20px;">
+        <button onclick="runTests()">Run All Tests</button>
+        <button onclick="testMARTAData()">Test MARTA Data</button>
+    </div>
+
+    <script>
+        const FRONTEND_URL = 'https://marta-eta.vercel.app';
+        const BACKEND_URL = 'https://marta-production.up.railway.app';
+        
+        async function checkFrontend() {
+            const statusDiv = document.getElementById('frontend-status');
+            try {
+                const response = await fetch(FRONTEND_URL);
+                if (response.ok) {
+                    statusDiv.className = 'status success';
+                    statusDiv.innerHTML = `
+                        <h3>✅ Frontend Status</h3>
+                        <p>Vercel deployment is live at: <a href="${FRONTEND_URL}" target="_blank">${FRONTEND_URL}</a></p>
+                    `;
+                } else {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+            } catch (error) {
+                statusDiv.className = 'status error';
+                statusDiv.innerHTML = `
+                    <h3>❌ Frontend Status</h3>
+                    <p>Error: ${error.message}</p>
+                `;
+            }
+        }
+        
+        async function checkBackend() {
+            const statusDiv = document.getElementById('backend-status');
+            try {
+                const response = await fetch(`${BACKEND_URL}/health`);
+                const data = await response.json();
+                
+                statusDiv.className = 'status success';
+                statusDiv.innerHTML = `
+                    <h3>✅ Backend Status</h3>
+                    <p>Railway deployment is live</p>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+            } catch (error) {
+                statusDiv.className = 'status error';
+                statusDiv.innerHTML = `
+                    <h3>❌ Backend Status</h3>
+                    <p>Error: ${error.message}</p>
+                `;
+            }
+        }
+        
+        async function testMARTAData() {
+            const statusDiv = document.getElementById('marta-api-status');
+            const resultsDiv = document.getElementById('results-content');
+            
+            try {
+                // Test different endpoints
+                const endpoints = [
+                    '/api/v1/marta/rail/arrivals',
+                    '/api/marta/rail/arrivals',
+                    '/marta/rail/arrivals',
+                    '/rail/arrivals'
+                ];
+                
+                let found = false;
+                let results = [];
+                
+                for (const endpoint of endpoints) {
+                    try {
+                        const response = await fetch(`${BACKEND_URL}${endpoint}`);
+                        if (response.ok) {
+                            const data = await response.json();
+                            found = true;
+                            results.push(`✅ ${endpoint} - Found ${data.length || 0} arrivals`);
+                            
+                            statusDiv.className = 'status success';
+                            statusDiv.innerHTML = `
+                                <h3>✅ MARTA API Status</h3>
+                                <p>Real-time data available at: ${endpoint}</p>
+                                <p>Trains found: ${data.length || 0}</p>
+                                <pre>${JSON.stringify(data.slice(0, 2), null, 2)}</pre>
+                            `;
+                            break;
+                        } else {
+                            results.push(`❌ ${endpoint} - HTTP ${response.status}`);
+                        }
+                    } catch (err) {
+                        results.push(`❌ ${endpoint} - ${err.message}`);
+                    }
+                }
+                
+                if (!found) {
+                    statusDiv.className = 'status error';
+                    statusDiv.innerHTML = `
+                        <h3>❌ MARTA API Status</h3>
+                        <p>Could not find MARTA endpoints</p>
+                    `;
+                }
+                
+                resultsDiv.textContent = results.join('\n');
+                
+            } catch (error) {
+                statusDiv.className = 'status error';
+                statusDiv.innerHTML = `
+                    <h3>❌ MARTA API Status</h3>
+                    <p>Error: ${error.message}</p>
+                `;
+            }
+        }
+        
+        async function runTests() {
+            await checkFrontend();
+            await checkBackend();
+            await testMARTAData();
+        }
+        
+        // Run tests on load
+        runTests();
+    </script>
+</body>
+</html>

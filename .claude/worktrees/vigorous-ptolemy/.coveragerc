@@ -1,0 +1,130 @@
+[run]
+# Source code directories to measure coverage for
+source = src/
+
+# Patterns for files to omit from coverage reporting
+omit = 
+    */tests/*
+    */test_*
+    */__pycache__/*
+    */venv/*
+    */env/*
+    */migrations/*
+    */alembic/*
+    */.tox/*
+    setup.py
+    */site-packages/*
+    */node_modules/*
+    */static/*
+    */media/*
+    */locale/*
+    */.pytest_cache/*
+    */htmlcov/*
+    */build/*
+    */dist/*
+    *.egg-info/*
+    */backup_synthetic_data/*
+
+# Branch coverage (more thorough than line coverage)
+branch = True
+
+# Parallel processing support
+parallel = True
+
+# Include coverage of unexecuted code in conditional statements
+skip_covered = False
+
+# Precision for coverage percentage reporting
+precision = 1
+
+[report]
+# Regexes for lines to exclude from consideration
+exclude_lines =
+    # Have to re-enable the standard pragma
+    pragma: no cover
+
+    # Don't complain about missing debug-only code:
+    def __repr__
+    if self\.debug
+
+    # Don't complain if tests don't hit defensive assertion code:
+    raise AssertionError
+    raise NotImplementedError
+
+    # Don't complain if non-runnable code isn't run:
+    if 0:
+    if __name__ == .__main__.:
+    if TYPE_CHECKING:
+
+    # Don't complain about abstract methods, they aren't run:
+    @(abc\.)?abstractmethod
+
+    # Don't complain about platform specific code:
+    pragma: platform
+    
+    # Don't complain about imports that may not be available:
+    except ImportError
+    except ModuleNotFoundError
+
+    # Don't complain about code that handles specific exceptions
+    except KeyboardInterrupt
+    except SystemExit
+    
+    # Don't complain about logging calls
+    logger\.debug
+    logger\.info
+    logger\.warning
+    logger\.error
+    logger\.critical
+
+# Show line numbers of missing statements
+show_missing = True
+
+# Skip files with 100% coverage in the report
+skip_covered = False
+
+# Sort the file names in the coverage report
+sort = Cover
+
+# Fail if coverage is below this percentage
+fail_under = 80
+
+# Precision for coverage percentage in reports
+precision = 1
+
+[html]
+# Directory for HTML coverage report
+directory = htmlcov
+
+# Title for the HTML report
+title = MARTA Platform Coverage Report
+
+# Show contexts in HTML report (requires Python 3.8+)
+show_contexts = True
+
+# Skip files with no missing statements
+skip_covered = False
+
+# Skip files that are empty
+skip_empty = True
+
+[xml]
+# Output file for XML coverage report (for CI/CD tools)
+output = coverage.xml
+
+[json]
+# Output file for JSON coverage report
+output = coverage.json
+
+# Pretty print the JSON report
+pretty_print = True
+
+# Show contexts in JSON report
+show_contexts = True
+
+[paths]
+# Path mapping for different environments
+source =
+    src/
+    */site-packages/
+    */lib/python*/site-packages/
