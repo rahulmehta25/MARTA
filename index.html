@@ -46,6 +46,10 @@
 
     * { box-sizing: border-box; }
 
+    html {
+      scrollbar-gutter: stable both-edges;
+    }
+
     body {
       margin: 0;
       min-height: 100vh;
@@ -55,6 +59,7 @@
       overflow-x: hidden;
       -webkit-font-smoothing: antialiased;
       text-rendering: optimizeLegibility;
+      scrollbar-gutter: stable both-edges;
     }
 
     /* Restrained fade + rise */
@@ -77,9 +82,10 @@
     .shell {
       max-width: 1480px;
       margin: 0 auto;
-      padding: var(--space-5) var(--space-5) var(--space-6);
+      padding: 24px 24px var(--space-6);
       display: grid;
       gap: var(--space-5);
+      box-sizing: border-box;
     }
 
     /* Top band: hairline, not a card */
@@ -152,6 +158,8 @@
       flex-wrap: wrap;
       justify-content: flex-end;
       padding-bottom: 4px;
+      padding-right: 2px;
+      max-width: min(100%, 420px);
     }
 
     .chip {
@@ -226,10 +234,11 @@
       border: 0;
       border-radius: 0;
       background:
-        radial-gradient(circle at 16% 10%, #f59e0b0d 0%, transparent 30%),
+        radial-gradient(circle at 16% 10%, #2dd4bf0a 0%, transparent 30%),
         radial-gradient(circle at 90% 90%, #2dd4bf0d 0%, transparent 34%),
         #09090b;
-      min-height: 520px;
+      min-height: 0;
+      aspect-ratio: 720 / 560;
       overflow: hidden;
       display: grid;
       box-shadow: inset 0 0 0 1px var(--hairline);
@@ -268,7 +277,7 @@
     .map-title-card {
       max-width: min(420px, 70%);
       padding: 0 0 10px;
-      border-bottom: 1px solid var(--amber);
+      border-bottom: 1px solid var(--teal);
     }
 
     .map-title-card h2 {
@@ -301,7 +310,7 @@
       font-family: var(--mono);
       text-transform: uppercase;
       letter-spacing: 0.12em;
-      color: var(--amber);
+      color: var(--teal);
       margin-bottom: 2px;
       font-weight: 600;
     }
@@ -339,6 +348,11 @@
       border-bottom: 1px solid var(--teal);
       padding-bottom: 2px;
       background: transparent;
+    }
+
+    .map-hint.is-hidden,
+    .map-hint[hidden] {
+      display: none !important;
     }
 
     .map-loading {
@@ -399,7 +413,7 @@
       width: 100%;
       height: 100%;
       display: block;
-      min-height: 520px;
+      min-height: 0;
       grid-area: 1 / 1;
     }
 
@@ -427,7 +441,8 @@
 
     .heat-bloom {
       pointer-events: none;
-      transition: r 220ms linear, fill 220ms linear, opacity 220ms linear;
+      fill: none;
+      transition: r 220ms linear, stroke 220ms linear, opacity 220ms linear, stroke-width 220ms linear;
       mix-blend-mode: screen;
     }
 
@@ -455,13 +470,13 @@
     .station-node.selected .station-core { fill: #fde68a; }
 
     .station-label {
-      fill: #d6d3d1;
+      fill: #e7e5e4;
       font-size: 11px;
       font-family: var(--mono);
       pointer-events: none;
       paint-order: stroke;
       stroke: #09090b;
-      stroke-width: 3.5;
+      stroke-width: 4.5;
       stroke-linejoin: round;
     }
 
@@ -568,11 +583,11 @@
       gap: var(--space-4);
     }
 
-    /* Primary control: solid amber */
+    /* Primary control: bone fill (amber reserved for live/now + Gold line) */
     button:not(.link-secondary) {
       appearance: none;
-      border: 0;
-      background: var(--amber);
+      border: 1px solid var(--hairline);
+      background: #e7e5e4;
       color: #0a0a0b;
       border-radius: 2px;
       padding: 8px 14px;
@@ -580,12 +595,13 @@
       letter-spacing: 0.08em;
       cursor: pointer;
       text-transform: uppercase;
-      transition: opacity 160ms ease, transform 160ms ease;
+      transition: opacity 160ms ease, transform 160ms ease, background 160ms ease;
     }
 
     button:not(.link-secondary):hover {
       transform: translateY(-1px);
       opacity: 0.92;
+      background: #fafaf9;
     }
 
     button:focus-visible {
@@ -620,7 +636,7 @@
 
     #timeSlider {
       width: 100%;
-      accent-color: var(--amber);
+      accent-color: var(--teal);
       cursor: pointer;
     }
 
@@ -634,13 +650,14 @@
 
     /* Sidebar: open inspector, section hairlines */
     .side-panel {
-      padding: var(--space-5) 0 var(--space-5) var(--space-5);
+      padding: var(--space-5) 8px var(--space-5) var(--space-5);
       display: flex;
       flex-direction: column;
       gap: 0;
       min-height: 0;
       border: 0;
       background: transparent;
+      overflow: hidden;
     }
 
     .inspector,
@@ -834,7 +851,7 @@
       place-items: start;
       border: 0;
       background: transparent;
-      color: var(--amber);
+      color: var(--teal);
       font-family: var(--mono);
       font-size: var(--type-xs);
       font-weight: 600;
@@ -928,14 +945,14 @@
       letter-spacing: 0.02em;
       font-variant-numeric: tabular-nums;
       flex-shrink: 0;
-      color: var(--amber);
+      color: #e7e5e4;
       font-weight: 600;
     }
 
-    /* Accent scarcity: status via amber/teal only */
+    /* Status: teal for mild; bone for moderate/heavy (amber reserved) */
     .mild { color: var(--teal); }
-    .moderate { color: var(--amber); }
-    .heavy { color: var(--amber-soft); }
+    .moderate { color: #e7e5e4; }
+    .heavy { color: #fafaf9; }
 
     .footer-note {
       color: var(--faint);
@@ -983,9 +1000,9 @@
         border-bottom: 1px solid var(--hairline);
         padding-right: 0;
       }
-      .side-panel { padding-left: 0; padding-top: var(--space-5); }
-      .map-wrap,
-      #mapSvg { min-height: 460px; }
+      .side-panel { padding: var(--space-5) 0 0; }
+      .map-wrap { aspect-ratio: 720 / 560; }
+      #mapSvg { min-height: 0; }
       .map-title-card { max-width: min(360px, 70%); }
     }
 
@@ -1005,14 +1022,14 @@
       }
       .topbar { flex-direction: column; align-items: flex-start; }
       .status-wrap { justify-content: flex-start; }
-      .map-wrap,
-      #mapSvg { min-height: 400px; }
+      .map-wrap { aspect-ratio: 1 / 1; }
+      #mapSvg { min-height: 0; }
       .map-legend { display: none; }
       .map-hint { display: none; }
     }
 
     @media (max-width: 560px) {
-      .shell { padding: var(--space-4); gap: var(--space-4); }
+      .shell { padding: 24px 24px var(--space-4); gap: var(--space-4); }
       .stat-grid { grid-template-columns: 1fr; }
       .stat-card,
       .stat-card:nth-child(2n) {
@@ -1061,7 +1078,7 @@
     <section class="layout">
       <article class="map-panel rise rise-2" aria-label="Rail command map">
         <div class="map-wrap">
-          <svg id="mapSvg" viewBox="0 0 1000 640" role="img" aria-label="MARTA rail map with moving trains and station demand heatmap">
+          <svg id="mapSvg" viewBox="175 48 720 570" preserveAspectRatio="xMidYMid meet" role="img" aria-label="MARTA rail map with moving trains and station demand heatmap">
             <defs>
               <filter id="softGlow" x="-40%" y="-40%" width="180%" height="180%">
                 <feGaussianBlur stdDeviation="2.5" result="blur"></feGaussianBlur>
@@ -1075,8 +1092,8 @@
               </pattern>
             </defs>
 
-            <rect x="0" y="0" width="1000" height="640" fill="#09090b"></rect>
-            <rect x="0" y="0" width="1000" height="640" fill="url(#dots)"></rect>
+            <rect x="175" y="48" width="720" height="570" fill="#09090b"></rect>
+            <rect x="175" y="48" width="720" height="570" fill="url(#dots)"></rect>
 
             <g class="grid-lines">
               <path d="M50 85 L950 85"></path>
@@ -1115,7 +1132,7 @@
               </div>
             </div>
 
-            <div class="map-hint">Select a station to inspect demand</div>
+            <div class="map-hint is-hidden" id="mapHint" hidden>Select a station to inspect demand</div>
           </div>
 
           <div class="map-loading" id="mapLoading" role="status" aria-live="polite">
@@ -1338,6 +1355,21 @@
         Green: "#34d399"
       };
 
+      /* Core-cluster label offsets to avoid line/node collisions */
+      const LABEL_LAYOUT = {
+        "north-springs": { dx: 10, dy: -10, anchor: "start" },
+        "buckhead": { dx: -12, dy: 4, anchor: "end" },
+        "lindbergh": { dx: -14, dy: -2, anchor: "end" },
+        "midtown": { dx: 12, dy: 5, anchor: "start" },
+        "five-points": { dx: -14, dy: 18, anchor: "end" },
+        "airport": { dx: 12, dy: 5, anchor: "start" },
+        "doraville": { dx: 10, dy: -8, anchor: "start" },
+        "hamilton-holmes": { dx: -10, dy: -10, anchor: "end" },
+        "east-lake": { dx: 0, dy: -12, anchor: "middle" },
+        "decatur": { dx: 0, dy: 16, anchor: "middle" },
+        "bankhead": { dx: -10, dy: -10, anchor: "end" }
+      };
+
       const PROFILE = {
         transfer: { morning: 1.45, midday: 1.05, evening: 1.42, night: 0.45 },
         business: { morning: 1.25, midday: 1.12, evening: 1.2, night: 0.35 },
@@ -1437,9 +1469,10 @@
 
       function loadColor(normalizedLoad) {
         const clamped = Math.max(0, Math.min(1, normalizedLoad));
-        const hue = 120 - (clamped * 115);
-        const alpha = 0.22 + (clamped * 0.56);
-        return `hsla(${hue}, 95%, 55%, ${alpha})`;
+        /* Teal ring stroke; avoid olive/amber fill blobs */
+        const alpha = 0.28 + (clamped * 0.42);
+        const light = 58 - (clamped * 12);
+        return `hsla(168, 72%, ${light}%, ${alpha})`;
       }
 
       function createSvgNode(name, attrs) {
@@ -1474,13 +1507,18 @@
           lineLayer.appendChild(overlay);
           linePaths[lineName] = base;
 
-          const labelStop = stopIds[Math.floor(stopIds.length / 2)];
-          const anchor = stationLookup[labelStop];
+          const lineLabelAnchor = {
+            Red: { id: "buckhead", dx: 14, dy: -14 },
+            Gold: { id: "lenox", dx: 12, dy: -12 },
+            Blue: { id: "georgia-state", dx: 8, dy: 18 },
+            Green: { id: "bankhead", dx: 12, dy: -12 }
+          }[lineName];
+          const anchor = stationLookup[lineLabelAnchor.id];
           const text = createSvgNode("text", {
-            x: anchor.x + (lineName === "Blue" ? 10 : 12),
-            y: anchor.y - (lineName === "Red" || lineName === "Gold" ? 12 : 10),
+            x: anchor.x + lineLabelAnchor.dx,
+            y: anchor.y + lineLabelAnchor.dy,
             fill: LINE_COLORS[lineName],
-            "font-size": 12,
+            "font-size": 11,
             "font-family": "IBM Plex Mono, monospace",
             "font-weight": 600
           });
@@ -1494,10 +1532,12 @@
           const heat = createSvgNode("circle", {
             cx: station.x,
             cy: station.y,
-            r: 8,
+            r: 7,
             class: "heat-bloom",
-            fill: "#38df9e",
-            opacity: 0.25
+            fill: "none",
+            stroke: "#2dd4bf",
+            "stroke-width": 1.25,
+            opacity: 0.28
           });
           heatLayer.appendChild(heat);
           heatNodes.set(station.id, heat);
@@ -1518,10 +1558,12 @@
           group.appendChild(core);
 
           if (station.label) {
+            const layout = LABEL_LAYOUT[station.id] || { dx: 9, dy: -9, anchor: "start" };
             const label = createSvgNode("text", {
-              x: station.x + 9,
-              y: station.y - 9,
-              class: "station-label"
+              x: station.x + layout.dx,
+              y: station.y + layout.dy,
+              class: "station-label",
+              "text-anchor": layout.anchor
             });
             label.textContent = station.name;
             group.appendChild(label);
@@ -1624,7 +1666,7 @@
         ctx.fillStyle = "#0a0a0c";
         ctx.fillRect(0, 0, cssWidth, cssHeight);
 
-        const padding = { left: 32, right: 14, top: 18, bottom: 26 };
+        const padding = { left: 28, right: 28, top: 18, bottom: 26 };
         const chartWidth = cssWidth - padding.left - padding.right;
         const chartHeight = cssHeight - padding.top - padding.bottom;
 
@@ -1685,11 +1727,13 @@
         ctx.stroke();
         ctx.setLineDash([]);
 
-        ctx.fillStyle = "#71717a";
+                ctx.fillStyle = "#71717a";
         ctx.font = '11px "IBM Plex Mono", monospace';
         [0, 6, 12, 18, 23].forEach((h) => {
           const x = padding.left + (h / 23) * chartWidth;
-          ctx.fillText(`${String(h).padStart(2, "0")}:00`, x - 14, cssHeight - 7);
+          const label = `${String(h).padStart(2, "0")}:00`;
+          const offset = h === 0 ? 0 : h === 23 ? -28 : -14;
+          ctx.fillText(label, x + offset, cssHeight - 7);
         });
       }
 
@@ -1719,10 +1763,12 @@
         stationValues.forEach(({ station, riders, crowding }) => {
           const heatNode = heatNodes.get(station.id);
           const norm = Math.min(1, riders / (station.base * 1.9));
-          const radius = 8 + (norm * 22);
+          const radius = 6.5 + (norm * 9);
           heatNode.setAttribute("r", radius.toFixed(2));
-          heatNode.setAttribute("fill", loadColor(norm));
-          heatNode.setAttribute("opacity", (0.18 + norm * 0.58).toFixed(2));
+          heatNode.setAttribute("fill", "none");
+          heatNode.setAttribute("stroke", loadColor(norm));
+          heatNode.setAttribute("stroke-width", (1.1 + norm * 1.1).toFixed(2));
+          heatNode.setAttribute("opacity", (0.22 + norm * 0.38).toFixed(2));
 
           const node = nodes.get(station.id);
           if (station.id === selectedStationId) {
@@ -1731,14 +1777,22 @@
             node.classList.remove("selected");
           }
 
+          /* Crowding core uses bone scale; amber reserved for live/now + Gold */
           if (crowding > 1.05) {
-            node.querySelector(".station-core").setAttribute("fill", "#fb923c");
+            node.querySelector(".station-core").setAttribute("fill", "#fafaf9");
           } else if (crowding > 0.78) {
-            node.querySelector(".station-core").setAttribute("fill", "#fbbf24");
-          } else {
             node.querySelector(".station-core").setAttribute("fill", "#e7e5e4");
+          } else {
+            node.querySelector(".station-core").setAttribute("fill", "#a8a29e");
           }
         });
+
+        const mapHint = document.getElementById("mapHint");
+        if (mapHint) {
+          const hasSelection = Boolean(selectedStationId);
+          mapHint.hidden = hasSelection;
+          mapHint.classList.toggle("is-hidden", hasSelection);
+        }
 
         const selected = stationValues.find((row) => row.station.id === selectedStationId) || stationValues[0];
         const selectedStation = selected.station;
