@@ -347,6 +347,10 @@
       transform-origin: center;
     }
 
+    .station-hit {
+      pointer-events: all;
+    }
+
     .station-core {
       fill: #d9ecff;
       stroke: #06101a;
@@ -1339,9 +1343,17 @@
           heatNodes.set(station.id, heat);
 
           const group = createSvgNode("g", { class: "station-node", "data-id": station.id });
+          const hit = createSvgNode("circle", {
+            cx: station.x,
+            cy: station.y,
+            r: 16,
+            fill: "transparent",
+            class: "station-hit"
+          });
           const ring = createSvgNode("circle", { cx: station.x, cy: station.y, r: 7.6, class: "station-ring" });
           const core = createSvgNode("circle", { cx: station.x, cy: station.y, r: 3.6, class: "station-core" });
 
+          group.appendChild(hit);
           group.appendChild(ring);
           group.appendChild(core);
 
