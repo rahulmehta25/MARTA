@@ -23,6 +23,21 @@
       --gold: #f1bd2d;
       --blue: #2f7cff;
       --green: #00bb7b;
+      --space-1: 4px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-5: 24px;
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --type-xs: 0.6875rem;
+      --type-sm: 0.8125rem;
+      --type-md: 0.9375rem;
+      --type-lg: 1.125rem;
+      --type-xl: 1.375rem;
+      --mono: "IBM Plex Mono", monospace;
+      --sans: "Space Grotesk", sans-serif;
     }
 
     * { box-sizing: border-box; }
@@ -30,72 +45,113 @@
     body {
       margin: 0;
       min-height: 100vh;
-      font-family: "Space Grotesk", sans-serif;
+      font-family: var(--sans);
       color: var(--text);
       background:
         radial-gradient(1200px 500px at 10% -10%, #1d4f6a55 0%, transparent 60%),
         radial-gradient(900px 500px at 95% 0%, #6c4b1f40 0%, transparent 60%),
         linear-gradient(165deg, #040b14 0%, #071928 55%, #04101c 100%);
       overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
     }
 
     .shell {
       max-width: 1500px;
       margin: 0 auto;
-      padding: 18px;
+      padding: var(--space-4);
       display: grid;
-      gap: 16px;
+      gap: var(--space-4);
     }
 
     .topbar {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 16px;
-      padding: 14px 18px;
-      border-radius: 14px;
+      gap: var(--space-4);
+      padding: var(--space-3) var(--space-4);
+      border-radius: var(--radius-lg);
       border: 1px solid #2a4b68;
       background: linear-gradient(120deg, #0a2133 0%, #0d2a40 50%, #0e1f31 100%);
       box-shadow: 0 20px 60px #00000040;
     }
 
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      min-width: 0;
+    }
+
+    .brand-mark {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      color: #041018;
+      background: linear-gradient(145deg, #7ec8ff 0%, #2f7cff 55%, #1a5fd0 100%);
+      box-shadow: 0 8px 20px #2f7cff44;
+    }
+
+    .title-wrap {
+      min-width: 0;
+    }
+
+    .eyebrow {
+      margin: 0 0 2px;
+      font-family: var(--mono);
+      font-size: var(--type-xs);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #8cabca;
+    }
+
     .title-wrap h1 {
       margin: 0;
-      font-size: clamp(1.15rem, 2vw, 1.6rem);
-      line-height: 1.1;
-      letter-spacing: 0.02em;
+      font-size: clamp(1.125rem, 2vw, 1.5rem);
+      line-height: 1.15;
+      letter-spacing: 0.01em;
+      font-weight: 700;
     }
 
     .title-wrap p {
       margin: 4px 0 0;
       color: var(--muted);
-      font-size: 0.88rem;
+      font-size: var(--type-sm);
+      line-height: 1.4;
     }
 
     .status-wrap {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: var(--space-2);
       flex-wrap: wrap;
+      justify-content: flex-end;
     }
 
     .chip {
-      padding: 8px 12px;
+      padding: 7px 12px;
       border-radius: 999px;
       border: 1px solid #355879;
       background: #0c2236;
       color: #b9d3e9;
-      font-size: 0.78rem;
-      letter-spacing: 0.04em;
+      font-size: var(--type-xs);
+      letter-spacing: 0.05em;
       text-transform: uppercase;
-      font-family: "IBM Plex Mono", monospace;
+      font-family: var(--mono);
+      white-space: nowrap;
     }
 
     .live {
       display: inline-flex;
       align-items: center;
-      gap: 8px;
+      gap: var(--space-2);
       color: #c9fff0;
+      border-color: #2f6d5c;
+      background: #0b2a28;
     }
 
     .live-dot {
@@ -115,80 +171,25 @@
 
     .layout {
       display: grid;
-      grid-template-columns: minmax(0, 2fr) minmax(320px, 1fr);
-      gap: 16px;
-      min-height: 720px;
+      grid-template-columns: minmax(0, 1.7fr) minmax(340px, 0.9fr);
+      gap: var(--space-4);
+      min-height: 760px;
+      align-items: stretch;
     }
 
     .panel {
       border: 1px solid var(--border);
-      border-radius: 16px;
+      border-radius: var(--radius-lg);
       background: linear-gradient(180deg, #0a1f32 0%, #081a2a 100%);
       box-shadow: inset 0 1px 0 #ffffff14, 0 24px 50px #00000030;
     }
 
     .map-panel {
-      padding: 16px;
+      padding: var(--space-3);
       display: grid;
-      grid-template-rows: auto auto minmax(400px, 1fr) auto;
-      gap: 14px;
-    }
-
-    .panel-title {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .panel-title h2 {
-      margin: 0;
-      font-size: 1.02rem;
-      font-weight: 600;
-      letter-spacing: 0.02em;
-    }
-
-    .panel-title p {
-      margin: 0;
-      color: var(--muted);
-      font-size: 0.86rem;
-    }
-
-    .kpis {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 10px;
-    }
-
-    .kpi {
-      padding: 12px;
-      border-radius: 12px;
-      border: 1px solid #294765;
-      background: #102941;
-      min-height: 90px;
-    }
-
-    .kpi label {
-      display: block;
-      font-size: 0.7rem;
-      font-family: "IBM Plex Mono", monospace;
-      color: #8cabca;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      margin-bottom: 6px;
-    }
-
-    .kpi strong {
-      font-size: clamp(1rem, 2vw, 1.5rem);
-      line-height: 1.05;
-      letter-spacing: 0.02em;
-      display: block;
-    }
-
-    .kpi span {
-      color: var(--muted);
-      font-size: 0.8rem;
+      grid-template-rows: minmax(520px, 1fr) auto auto;
+      gap: var(--space-3);
+      min-height: 0;
     }
 
     .map-wrap {
@@ -199,15 +200,116 @@
         radial-gradient(circle at 20% 15%, #194f7522 0%, transparent 30%),
         radial-gradient(circle at 80% 90%, #78541933 0%, transparent 35%),
         linear-gradient(180deg, #081626 0%, #091c2e 100%);
-      min-height: 440px;
+      min-height: 520px;
       overflow: hidden;
+      display: grid;
+    }
+
+    .map-chrome {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+      padding: var(--space-3);
+    }
+
+    .map-chrome > * {
+      pointer-events: auto;
+    }
+
+    .map-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: var(--space-3);
+    }
+
+    .map-title-card,
+    .map-legend,
+    .map-hint {
+      border-radius: var(--radius-md);
+      border: 1px solid #3a5674;
+      background: #071826d9;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 10px 28px #00000040;
+    }
+
+    .map-title-card {
+      max-width: min(420px, 70%);
+      padding: 10px 12px;
+    }
+
+    .map-title-card h2 {
+      margin: 0;
+      font-size: var(--type-md);
+      font-weight: 600;
+      letter-spacing: 0.01em;
+    }
+
+    .map-title-card p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: var(--type-xs);
+      line-height: 1.35;
+    }
+
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: var(--space-2);
+      width: 100%;
+    }
+
+    .kpi {
+      padding: 10px 12px;
+      border-radius: var(--radius-md);
+      border: 1px solid #2f4e6d;
+      background: #102941;
+      min-height: 78px;
+    }
+
+    .kpi label {
+      display: block;
+      font-size: var(--type-xs);
+      font-family: var(--mono);
+      color: #8cabca;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 6px;
+    }
+
+    .kpi strong,
+    .stat-card strong,
+    .metric-value {
+      font-variant-numeric: tabular-nums;
+      font-feature-settings: "tnum";
+    }
+
+    .kpi strong {
+      font-size: clamp(1rem, 1.8vw, 1.35rem);
+      line-height: 1.1;
+      letter-spacing: 0.01em;
+      display: block;
+      min-height: 1.2em;
+    }
+
+    .kpi span {
+      color: var(--muted);
+      font-size: var(--type-xs);
+      line-height: 1.3;
+      display: block;
+      margin-top: 4px;
     }
 
     #mapSvg {
       width: 100%;
       height: 100%;
       display: block;
-      min-height: 440px;
+      min-height: 520px;
+      grid-area: 1 / 1;
     }
 
     .grid-lines path {
@@ -271,7 +373,7 @@
     .station-label {
       fill: #9db8d0;
       font-size: 12px;
-      font-family: "IBM Plex Mono", monospace;
+      font-family: var(--mono);
       pointer-events: none;
       paint-order: stroke;
       stroke: #081522;
@@ -286,27 +388,29 @@
     }
 
     .map-legend {
-      position: absolute;
-      right: 12px;
-      top: 12px;
       display: grid;
       gap: 6px;
-      padding: 10px;
-      border-radius: 10px;
-      border: 1px solid #3a5674;
-      background: #071826d9;
-      backdrop-filter: blur(8px);
-      font-size: 0.72rem;
-      min-width: 140px;
+      padding: 10px 12px;
+      font-size: var(--type-xs);
+      min-width: 148px;
+      flex-shrink: 0;
+    }
+
+    .legend-title {
+      font-family: var(--mono);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: #9ec0dc;
+      margin-bottom: 2px;
     }
 
     .legend-row {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 8px;
+      gap: var(--space-2);
       color: #b4ccdf;
-      font-family: "IBM Plex Mono", monospace;
+      font-family: var(--mono);
       text-transform: uppercase;
       letter-spacing: 0.05em;
     }
@@ -317,6 +421,7 @@
       border-radius: 50%;
       margin-right: 8px;
       box-shadow: 0 0 8px #00000099;
+      flex-shrink: 0;
     }
 
     .legend-left {
@@ -324,28 +429,86 @@
       align-items: center;
     }
 
+    .map-hint {
+      margin-top: auto;
+      align-self: flex-start;
+      padding: 8px 12px;
+      color: #b8d2e7;
+      font-size: var(--type-xs);
+      font-family: var(--mono);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .map-loading {
+      position: absolute;
+      inset: 0;
+      z-index: 3;
+      display: grid;
+      place-items: center;
+      background: #071826e6;
+      backdrop-filter: blur(6px);
+      transition: opacity 280ms ease, visibility 280ms ease;
+    }
+
+    .map-loading-card {
+      display: grid;
+      gap: var(--space-2);
+      justify-items: center;
+      text-align: center;
+      padding: var(--space-4);
+    }
+
+    .map-loading-card strong {
+      font-size: var(--type-md);
+    }
+
+    .map-loading-card span {
+      color: var(--muted);
+      font-size: var(--type-sm);
+    }
+
+    .spinner {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 2px solid #355879;
+      border-top-color: #7ec8ff;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    body.is-ready .map-loading {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
     .slider-wrap {
-      padding: 12px;
-      border-radius: 12px;
+      padding: 12px var(--space-3);
+      border-radius: var(--radius-md);
       border: 1px solid #2b4865;
       background: #0d253a;
       display: grid;
-      gap: 8px;
+      gap: var(--space-2);
     }
 
     .slider-head {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 10px;
+      gap: var(--space-3);
       flex-wrap: wrap;
     }
 
     .slider-head h3 {
       margin: 0;
-      font-size: 0.88rem;
-      letter-spacing: 0.03em;
-      font-family: "IBM Plex Mono", monospace;
+      font-size: var(--type-xs);
+      letter-spacing: 0.06em;
+      font-family: var(--mono);
       text-transform: uppercase;
       color: #b9d4e8;
     }
@@ -353,7 +516,7 @@
     .controls {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: var(--space-2);
     }
 
     button {
@@ -361,18 +524,24 @@
       border: 1px solid #3d607f;
       background: #123049;
       color: #d4e8f8;
-      border-radius: 8px;
-      padding: 7px 11px;
-      font: 500 0.78rem/1 "IBM Plex Mono", monospace;
+      border-radius: var(--radius-sm);
+      padding: 8px 12px;
+      font: 500 var(--type-xs)/1 var(--mono);
       letter-spacing: 0.05em;
       cursor: pointer;
       text-transform: uppercase;
-      transition: transform 150ms ease, background 150ms ease;
+      transition: transform 150ms ease, background 150ms ease, border-color 150ms ease;
     }
 
     button:hover {
       transform: translateY(-1px);
       background: #173954;
+      border-color: #4e7a9c;
+    }
+
+    button:focus-visible {
+      outline: 2px solid #7ec8ff;
+      outline-offset: 2px;
     }
 
     #timeSlider {
@@ -385,41 +554,55 @@
       display: flex;
       justify-content: space-between;
       color: #88a6c2;
-      font-family: "IBM Plex Mono", monospace;
-      font-size: 0.71rem;
+      font-family: var(--mono);
+      font-size: var(--type-xs);
     }
 
     .side-panel {
-      padding: 16px;
+      padding: var(--space-4);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+      min-height: 0;
+    }
+
+    .inspector {
       display: grid;
-      grid-template-rows: auto auto auto 1fr;
-      gap: 12px;
+      gap: var(--space-3);
+      padding: var(--space-3);
+      border-radius: var(--radius-md);
+      border: 1px solid #355879;
+      background: linear-gradient(180deg, #12324a 0%, #0f2437 100%);
     }
 
     .station-header h2 {
       margin: 0;
-      font-size: 1.2rem;
+      font-size: var(--type-xl);
       line-height: 1.15;
+      letter-spacing: 0.01em;
     }
 
     .station-header p {
       margin: 6px 0 0;
       color: var(--muted);
-      font-size: 0.84rem;
+      font-size: var(--type-sm);
+      line-height: 1.4;
+      min-height: 1.4em;
     }
 
     .line-badges {
       display: flex;
       flex-wrap: wrap;
-      gap: 7px;
-      margin-top: 8px;
+      gap: 6px;
+      margin-top: 10px;
+      min-height: 28px;
     }
 
     .line-badge {
       padding: 5px 8px;
       border-radius: 999px;
-      font-size: 0.7rem;
-      font-family: "IBM Plex Mono", monospace;
+      font-size: var(--type-xs);
+      font-family: var(--mono);
       text-transform: uppercase;
       letter-spacing: 0.07em;
       border: 1px solid #ffffff3a;
@@ -435,66 +618,137 @@
     .stat-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 8px;
+      gap: var(--space-2);
     }
 
     .stat-card {
       border: 1px solid #2f4e6d;
       border-radius: 10px;
-      background: #10263b;
-      padding: 10px;
-      min-height: 74px;
+      background: #0d2236;
+      padding: 10px 12px;
+      min-height: 70px;
     }
 
     .stat-card label {
       display: block;
-      font-size: 0.66rem;
+      font-size: var(--type-xs);
       color: #88a7c3;
       text-transform: uppercase;
       letter-spacing: 0.06em;
-      font-family: "IBM Plex Mono", monospace;
+      font-family: var(--mono);
     }
 
     .stat-card strong {
       display: block;
-      margin-top: 6px;
-      font-size: 1rem;
-      line-height: 1;
+      margin-top: 8px;
+      font-size: var(--type-lg);
+      line-height: 1.1;
+      min-height: 1.1em;
     }
 
     .chart-card,
     .list-card {
       border: 1px solid #2f4d6b;
-      border-radius: 12px;
-      padding: 10px;
+      border-radius: var(--radius-md);
+      padding: var(--space-3);
       background: #0f2437;
+    }
+
+    .chart-card {
+      position: relative;
+      flex: 1 1 auto;
+      min-height: 210px;
+      display: grid;
+      grid-template-rows: auto 1fr;
+      gap: var(--space-2);
     }
 
     .card-title {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 8px;
-      font-size: 0.72rem;
+      gap: var(--space-2);
+      font-size: var(--type-xs);
       text-transform: uppercase;
       letter-spacing: 0.07em;
       color: #9ec0dc;
-      font-family: "IBM Plex Mono", monospace;
+      font-family: var(--mono);
+    }
+
+    .chart-frame {
+      position: relative;
+      min-height: 178px;
     }
 
     #stationChart {
       width: 100%;
       height: 178px;
       display: block;
-      border-radius: 8px;
+      border-radius: var(--radius-sm);
       background: #0b1c2d;
       border: 1px solid #284660;
+    }
+
+    .chart-empty,
+    .list-empty {
+      display: none;
+      place-items: center;
+      text-align: center;
+      gap: 6px;
+      color: var(--muted);
+      padding: var(--space-4);
+      border-radius: var(--radius-sm);
+      border: 1px dashed #355879;
+      background: #0b1c2d;
+      font-size: var(--type-sm);
+      line-height: 1.4;
+    }
+
+    .chart-empty {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+    }
+
+    .chart-empty strong,
+    .list-empty strong {
+      display: block;
+      color: #d4e8f8;
+      font-size: var(--type-sm);
+      margin-bottom: 2px;
+    }
+
+    body:not(.is-ready) .chart-empty,
+    body:not(.is-ready) .list-empty,
+    .list-empty.is-visible {
+      display: grid;
+    }
+
+    body:not(.is-ready) #stationChart {
+      opacity: 0.35;
+    }
+
+    body:not(.is-ready) .forecast-list,
+    body:not(.is-ready) .hot-list {
+      display: none;
+    }
+
+    .kpi strong .metric-value,
+    .stat-card strong .metric-value,
+    .station-header .ready-only {
+      display: inline;
+    }
+
+    .kpi strong,
+    .stat-card strong {
+      display: block;
     }
 
     .forecast-list,
     .hot-list {
       display: grid;
-      gap: 7px;
+      gap: 6px;
+      min-height: 44px;
     }
 
     .forecast-item,
@@ -502,22 +756,36 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 8px 9px;
-      border-radius: 8px;
+      gap: var(--space-2);
+      padding: 9px 10px;
+      border-radius: var(--radius-sm);
       background: #12314a;
       border: 1px solid #325474;
-      font-size: 0.82rem;
+      font-size: var(--type-sm);
+    }
+
+    .hot-item {
+      background: #102c42;
     }
 
     .forecast-item time,
     .hot-item span:first-child {
       color: #b8d2e7;
+      min-width: 0;
+    }
+
+    .hot-item span:first-child {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     .forecast-item strong,
     .hot-item strong {
-      font-family: "IBM Plex Mono", monospace;
+      font-family: var(--mono);
       letter-spacing: 0.02em;
+      font-variant-numeric: tabular-nums;
+      flex-shrink: 0;
     }
 
     .mild { color: var(--good); }
@@ -526,79 +794,112 @@
 
     .footer-note {
       color: #6f89a2;
-      font-size: 0.75rem;
+      font-size: var(--type-xs);
       margin: 0;
-      line-height: 1.45;
+      line-height: 1.5;
+    }
+
+    .skeleton {
+      display: inline-block;
+      height: 0.9em;
+      width: 4.5ch;
+      border-radius: 4px;
+      background: linear-gradient(90deg, #1a334a 0%, #274864 50%, #1a334a 100%);
+      background-size: 200% 100%;
+      animation: shimmer 1.4s ease-in-out infinite;
+      vertical-align: middle;
+    }
+
+    .skeleton.wide { width: 9ch; }
+    .skeleton.block {
+      display: block;
+      width: 100%;
+      height: 100%;
+      min-height: 178px;
+      border-radius: var(--radius-sm);
+    }
+
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    body.is-ready .skeleton,
+    body.is-ready .boot-only {
+      display: none !important;
+    }
+
+    body:not(.is-ready) .ready-only {
+      display: none !important;
     }
 
     @media (max-width: 1180px) {
-      .layout { grid-template-columns: 1fr; }
-      .map-panel { min-height: 640px; }
-      .side-panel { grid-template-rows: auto auto auto auto; }
+      .layout {
+        grid-template-columns: 1fr;
+        min-height: 0;
+      }
+      .map-panel { min-height: 0; }
+      .map-wrap,
+      #mapSvg { min-height: 480px; }
+      .map-title-card { max-width: min(360px, 65%); }
     }
 
     @media (max-width: 860px) {
-      .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); width: 100%; }
       .topbar { flex-direction: column; align-items: flex-start; }
-      #mapSvg { min-height: 380px; }
-      .ticks { font-size: 0.64rem; }
+      .status-wrap { justify-content: flex-start; }
+      .map-wrap,
+      #mapSvg { min-height: 420px; }
+      .map-chrome { padding: var(--space-2); }
+      .map-top { flex-direction: column; }
+      .map-title-card { max-width: 100%; }
+      .map-legend { display: none; }
+      .map-hint { display: none; }
     }
 
     @media (max-width: 560px) {
-      .shell { padding: 12px; }
-      .map-panel,
-      .side-panel { padding: 12px; }
-      .kpi { min-height: 80px; }
+      .shell { padding: var(--space-3); gap: var(--space-3); }
+      .side-panel { padding: var(--space-3); }
+      .map-panel { padding: var(--space-2); }
       .stat-grid { grid-template-columns: 1fr; }
+      .brand-mark { width: 36px; height: 36px; }
+      .kpi { min-height: 72px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+      .live-dot { box-shadow: none; }
     }
   </style>
 </head>
 <body>
   <div class="shell">
     <header class="topbar">
-      <div class="title-wrap">
-        <h1>MARTA Transit Analytics, Atlanta Operations Digital Twin</h1>
-        <p>Live-simulated network flow with station-level ridership forecasting and congestion telemetry.</p>
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">M</div>
+        <div class="title-wrap">
+          <p class="eyebrow">Atlanta rail operations</p>
+          <h1>MARTA Transit Analytics</h1>
+          <p>Station ridership forecasts and crowding telemetry on a live-simulated network.</p>
+        </div>
       </div>
       <div class="status-wrap">
-        <div class="chip live"><span class="live-dot"></span>Network Simulation Active</div>
-        <div class="chip" id="simClock">06:30</div>
-        <div class="chip" id="demandState">Early Service</div>
+        <div class="chip live"><span class="live-dot"></span>Simulation live</div>
+        <div class="chip boot-only">Loading clock</div>
+        <div class="chip ready-only" id="simClock">06:30 AM</div>
+        <div class="chip boot-only">Warming model</div>
+        <div class="chip ready-only" id="demandState">Early Service</div>
       </div>
     </header>
 
     <section class="layout">
-      <article class="panel map-panel">
-        <div class="panel-title">
-          <div>
-            <h2>Real-time Rail Command Map</h2>
-            <p>Animated train telemetry on Red, Gold, Blue, and Green lines.</p>
-          </div>
-        </div>
-
-        <div class="kpis">
-          <div class="kpi">
-            <label>Network Riders / Hr</label>
-            <strong id="networkRiders">0</strong>
-            <span>Predicted boardings now</span>
-          </div>
-          <div class="kpi">
-            <label>Average Crowding</label>
-            <strong id="avgCrowding">0%</strong>
-            <span>Across all active stations</span>
-          </div>
-          <div class="kpi">
-            <label>Peak Station</label>
-            <strong id="peakStation">-</strong>
-            <span id="peakStationLoad">0 riders/hr</span>
-          </div>
-          <div class="kpi">
-            <label>Predicted Headway</label>
-            <strong id="headway">0 min</strong>
-            <span>Adaptive scheduling estimate</span>
-          </div>
-        </div>
-
+      <article class="panel map-panel" aria-label="Rail command map">
         <div class="map-wrap">
           <svg id="mapSvg" viewBox="0 0 1000 640" role="img" aria-label="MARTA rail map with moving trains and station demand heatmap">
             <defs>
@@ -636,21 +937,79 @@
             <g id="trainLayer"></g>
           </svg>
 
-          <div class="map-legend">
-            <div class="legend-row"><span class="legend-left"><span class="legend-color" style="background:var(--red)"></span>Red</span><span>North-South</span></div>
-            <div class="legend-row"><span class="legend-left"><span class="legend-color" style="background:var(--gold)"></span>Gold</span><span>NE Connector</span></div>
-            <div class="legend-row"><span class="legend-left"><span class="legend-color" style="background:var(--blue)"></span>Blue</span><span>West-East</span></div>
-            <div class="legend-row"><span class="legend-left"><span class="legend-color" style="background:var(--green)"></span>Green</span><span>Core Shuttle</span></div>
-            <div class="legend-row"><span class="legend-left"><span class="legend-color" style="background:#ff7c4a"></span>Heat</span><span>Passenger Load</span></div>
+          <div class="map-chrome">
+            <div class="map-top">
+              <div class="map-title-card">
+                <h2>Rail command map</h2>
+                <p>Animated train motion on Red, Gold, Blue, and Green lines.</p>
+              </div>
+
+              <div class="map-legend" aria-label="Map legend">
+                <div class="legend-title">Lines</div>
+                <div class="legend-row"><span class="legend-left"><span class="legend-color" style="background:var(--red)"></span>Red</span><span>North South</span></div>
+                <div class="legend-row"><span class="legend-left"><span class="legend-color" style="background:var(--gold)"></span>Gold</span><span>NE connector</span></div>
+                <div class="legend-row"><span class="legend-left"><span class="legend-color" style="background:var(--blue)"></span>Blue</span><span>West East</span></div>
+                <div class="legend-row"><span class="legend-left"><span class="legend-color" style="background:var(--green)"></span>Green</span><span>Core shuttle</span></div>
+                <div class="legend-row"><span class="legend-left"><span class="legend-color" style="background:#ff7c4a"></span>Heat</span><span>Passenger load</span></div>
+              </div>
+            </div>
+
+            <div class="map-hint">Select a station to inspect demand</div>
+          </div>
+
+          <div class="map-loading" id="mapLoading" role="status" aria-live="polite">
+            <div class="map-loading-card">
+              <div class="spinner" aria-hidden="true"></div>
+              <strong>Initializing network</strong>
+              <span>Building rail lines, station heat, and train telemetry.</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="kpis" aria-label="Network metrics">
+          <div class="kpi">
+            <label>Network riders / hr</label>
+            <strong>
+              <span class="skeleton wide boot-only" aria-hidden="true"></span>
+              <span id="networkRiders" class="ready-only metric-value">0</span>
+            </strong>
+            <span>Predicted boardings now</span>
+          </div>
+          <div class="kpi">
+            <label>Average crowding</label>
+            <strong>
+              <span class="skeleton boot-only" aria-hidden="true"></span>
+              <span id="avgCrowding" class="ready-only metric-value">0%</span>
+            </strong>
+            <span>Across active stations</span>
+          </div>
+          <div class="kpi">
+            <label>Peak station</label>
+            <strong>
+              <span class="skeleton wide boot-only" aria-hidden="true"></span>
+              <span id="peakStation" class="ready-only metric-value">Loading</span>
+            </strong>
+            <span>
+              <span class="skeleton boot-only" aria-hidden="true"></span>
+              <span id="peakStationLoad" class="ready-only">Awaiting first tick</span>
+            </span>
+          </div>
+          <div class="kpi">
+            <label>Predicted headway</label>
+            <strong>
+              <span class="skeleton boot-only" aria-hidden="true"></span>
+              <span id="headway" class="ready-only metric-value">0 min</span>
+            </strong>
+            <span>Adaptive schedule estimate</span>
           </div>
         </div>
 
         <div class="slider-wrap">
           <div class="slider-head">
-            <h3>Simulated Day Scrubber</h3>
+            <h3>Day timeline</h3>
             <div class="controls">
               <button id="playToggle" type="button">Pause</button>
-              <button id="jumpRush" type="button">Jump to Rush</button>
+              <button id="jumpRush" type="button">Jump to rush</button>
             </div>
           </div>
           <input id="timeSlider" type="range" min="0" max="1439" step="15" value="390" aria-label="Transit simulation time slider">
@@ -666,56 +1025,93 @@
         </div>
       </article>
 
-      <aside class="panel side-panel">
-        <div class="station-header">
-          <h2 id="stationName">Five Points</h2>
-          <p id="stationSub">Multiline transfer hub</p>
-          <div class="line-badges" id="lineBadges"></div>
-        </div>
+      <aside class="panel side-panel" aria-label="Station inspector">
+        <section class="inspector">
+          <div class="station-header">
+            <p class="eyebrow">Selected station</p>
+            <h2>
+              <span class="skeleton wide boot-only" aria-hidden="true"></span>
+              <span id="stationName" class="ready-only">Five Points</span>
+            </h2>
+            <p>
+              <span class="skeleton wide boot-only" aria-hidden="true"></span>
+              <span id="stationSub" class="ready-only">Multiline transfer hub</span>
+            </p>
+            <div class="line-badges" id="lineBadges"></div>
+          </div>
 
-        <div class="stat-grid">
-          <div class="stat-card">
-            <label>Predicted Riders / Hr</label>
-            <strong id="stationRiders">0</strong>
+          <div class="stat-grid">
+            <div class="stat-card">
+              <label>Predicted riders / hr</label>
+              <strong>
+                <span class="skeleton boot-only" aria-hidden="true"></span>
+                <span id="stationRiders" class="ready-only metric-value">0</span>
+              </strong>
+            </div>
+            <div class="stat-card">
+              <label>Crowding index</label>
+              <strong>
+                <span class="skeleton boot-only" aria-hidden="true"></span>
+                <span id="crowdingIndex" class="ready-only metric-value">0%</span>
+              </strong>
+            </div>
+            <div class="stat-card">
+              <label>Incoming trains</label>
+              <strong>
+                <span class="skeleton boot-only" aria-hidden="true"></span>
+                <span id="incomingTrains" class="ready-only metric-value">0</span>
+              </strong>
+            </div>
+            <div class="stat-card">
+              <label>Platform status</label>
+              <strong>
+                <span class="skeleton boot-only" aria-hidden="true"></span>
+                <span id="platformStatus" class="ready-only metric-value">Stable</span>
+              </strong>
+            </div>
           </div>
-          <div class="stat-card">
-            <label>Crowding Index</label>
-            <strong id="crowdingIndex">0%</strong>
-          </div>
-          <div class="stat-card">
-            <label>Incoming Trains</label>
-            <strong id="incomingTrains">0</strong>
-          </div>
-          <div class="stat-card">
-            <label>Platform Status</label>
-            <strong id="platformStatus">Stable</strong>
-          </div>
-        </div>
+        </section>
 
         <section class="chart-card">
           <div class="card-title">
-            <span>24H Ridership Forecast</span>
-            <span id="chartTag">Model: LSTM + XGB</span>
+            <span>24h ridership forecast</span>
+            <span id="chartTag">LSTM + XGB</span>
           </div>
-          <canvas id="stationChart" width="360" height="178"></canvas>
+          <div class="chart-frame">
+            <canvas id="stationChart" width="360" height="178" aria-label="24 hour ridership forecast chart"></canvas>
+            <div class="chart-empty" id="chartEmpty">
+              <strong>Building forecast</strong>
+              <span>The 24 hour ridership curve appears after the first simulation tick.</span>
+            </div>
+          </div>
         </section>
 
         <section class="list-card">
           <div class="card-title">
-            <span>Upcoming Windows</span>
-            <span id="nextWindow">+3 Hours</span>
+            <span>Upcoming windows</span>
+            <span id="nextWindow">Next 3 hours</span>
           </div>
-          <div class="forecast-list" id="forecastList"></div>
+          <div class="forecast-list" id="forecastList" aria-live="polite"></div>
+          <div class="list-empty" id="forecastEmpty">
+            <strong>No forecast windows yet</strong>
+            <span>Future boarding estimates will fill in once the model is warm.</span>
+          </div>
+        </section>
 
-          <div class="card-title" style="margin-top:10px;">
-            <span>Highest Demand Stations</span>
-            <span>Live</span>
+        <section class="list-card">
+          <div class="card-title">
+            <span>Highest demand stations</span>
+            <span>Live rank</span>
           </div>
-          <div class="hot-list" id="hotList"></div>
+          <div class="hot-list" id="hotList" aria-live="polite"></div>
+          <div class="list-empty" id="hotEmpty">
+            <strong>Demand ranking pending</strong>
+            <span>Top stations appear after the first network update.</span>
+          </div>
         </section>
 
         <p class="footer-note">
-          Simulation mode uses pre-canned but realistic demand curves tuned for weekday commute behavior and transfer pressure across the MARTA core.
+          Simulation mode uses weekday demand curves tuned for commute peaks and transfer pressure across the MARTA core.
         </p>
       </aside>
     </section>
@@ -806,6 +1202,21 @@
       let simMinutes = Number(timeSlider.value);
       let autoplay = true;
       let lastFrame = performance.now();
+      let hasMarkedReady = false;
+
+      function markReady() {
+        if (hasMarkedReady) return;
+        hasMarkedReady = true;
+        window.setTimeout(() => {
+          document.body.classList.add("is-ready");
+        }, 360);
+      }
+
+      function setListEmptyState(listEl, emptyEl, isEmpty) {
+        if (!listEl || !emptyEl) return;
+        listEl.hidden = isEmpty;
+        emptyEl.classList.toggle("is-visible", isEmpty);
+      }
 
       function gaussian(x, mean, sigma) {
         const z = (x - mean) / sigma;
@@ -1172,23 +1583,30 @@
         const status = statusFromCrowding(selected.crowding);
         const platformStatus = document.getElementById("platformStatus");
         platformStatus.textContent = status.label;
-        platformStatus.className = status.className;
+        platformStatus.classList.remove("mild", "moderate", "heavy");
+        platformStatus.classList.add(status.className);
 
         const forecastList = document.getElementById("forecastList");
+        const forecastEmpty = document.getElementById("forecastEmpty");
         const windows = [30, 60, 90, 120, 180];
-        forecastList.innerHTML = windows.map((offset) => {
+        const forecastHtml = windows.map((offset) => {
           const futureMinute = simMinutes + offset;
           const forecast = ridershipForStation(selectedStation, futureMinute);
           return `<div class="forecast-item"><time>${formatClock(futureMinute)}</time><strong>${formatNumber(forecast)}</strong></div>`;
         }).join("");
+        forecastList.innerHTML = forecastHtml;
+        setListEmptyState(forecastList, forecastEmpty, windows.length === 0);
 
         const hotList = document.getElementById("hotList");
+        const hotEmpty = document.getElementById("hotEmpty");
         const topStations = [...stationValues].sort((a, b) => b.riders - a.riders).slice(0, 5);
         hotList.innerHTML = topStations.map((row) => {
           return `<div class="hot-item"><span>${row.station.name}</span><strong>${formatNumber(row.riders)}</strong></div>`;
         }).join("");
+        setListEmptyState(hotList, hotEmpty, topStations.length === 0);
 
         updateChart(selectedStation);
+        markReady();
       }
 
       function frame(now) {
